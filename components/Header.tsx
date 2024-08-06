@@ -49,7 +49,7 @@ export const Header = () => {
           <SheetContent>
             <nav className="flex flex-col space-y-4 mt-8">
               {navItems.map((item, index) => (
-                <Link href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
+                <Link key={index} href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
               ))}
             </nav>
           </SheetContent>
