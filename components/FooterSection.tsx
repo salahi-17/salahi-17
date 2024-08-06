@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-100 py-8">
+    <footer className="bg-pink-50 py-8">
       <div className="container mx-auto flex flex-wrap justify-between">
         <div className="w-full md:w-1/4 mb-6 md:mb-0">
           <h3 className="text-xl font-bold text-pink-500 mb-4">Zafiri Group</h3>

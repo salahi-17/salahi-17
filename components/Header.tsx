@@ -6,31 +6,34 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from 'lucide-react';
+import Link from 'next/link';
 
 const navItems = [
-  "About",
-  "Hotels",
-  "Activities",
-  "Food and Culture",
-  "Islands",
-  "History",
-  "Contact Us",
-  "Itinerary Creator",
-  "Itinerary Interface"
+  { name: "About", link: "/about" },
+  { name: "Hotels", link: "/hotels" },
+  { name: "Activities", link: "/activities" },
+  { name: "Food and Culture", link: "/food-and-culture" },
+  { name: "Islands", link: "/islands" },
+  { name: "History", link: "/history" },
+  { name: "Contact Us", link: "/contact" },
+  { name: "Itinerary Creator", link: "/itinerary-creator" }
 ];
+
 
 export const Header = () => {
   return (
     <header className="bg-white p-4 shadow-sm">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold text-pink-500">Zafiri</div>
+        <Link href="/" className="text-2xl font-bold">
+        Zafiri
+        </Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden lg:block">
           <ul className="flex space-x-4">
             {navItems.map((item, index) => (
               <li key={index}>
-                <Button variant="ghost">{item}</Button>
+                <Link href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
               </li>
             ))}
           </ul>
@@ -46,7 +49,7 @@ export const Header = () => {
           <SheetContent>
             <nav className="flex flex-col space-y-4 mt-8">
               {navItems.map((item, index) => (
-                <Button key={index} variant="ghost">{item}</Button>
+                <Link href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
               ))}
             </nav>
           </SheetContent>

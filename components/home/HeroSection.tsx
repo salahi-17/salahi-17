@@ -5,7 +5,7 @@ export const HeroSection = () => {
   return (
     <section className="relative h-[600px] w-full overflow-hidden">
       <img 
-        src="public/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg" 
+        src="humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg" 
         alt="Beautiful Zanzibar beach"
         className="absolute inset-0 w-full h-full object-cover"
       />

@@ -1,7 +1,6 @@
-import Image from "next/image";
-import { HeroSection } from "@/components/HeroSection";
-import { ExcursionsSection } from "@/components/ExcursionsSection";
-import { DiscoverSection } from "@/components/DiscoverSection";
+import { HeroSection } from "@/components/home/HeroSection";
+import { ExcursionsSection } from "@/components/home/ExcursionsSection";
+import { DiscoverSection } from "@/components/home/DiscoverSection";
 
 
 export default function Home() {
