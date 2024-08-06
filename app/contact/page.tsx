@@ -66,7 +66,7 @@ const ContactPage = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
-            <h2 className="text-3xl font-bold mb-4">We're here for you</h2>
+            <h2 className="text-3xl font-bold mb-4">We are here for you</h2>
             <p className="mb-4">
               Discover the beauty of Zanzibar while enjoying peace of mind. Our team is available 24/7 to help you plan your perfect trip. Whether you need travel advice, destination information, or just want to say hello, we're here for you.
             </p>
