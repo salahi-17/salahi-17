@@ -1,11 +1,12 @@
 import React from 'react';
+
 import { Button } from '@/components/ui/button';
 
 export const HeroSection = () => {
   return (
     <section className="relative h-[600px] w-full overflow-hidden">
-      <img 
-        src="humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg" 
+      <img
+        src="/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg"
         alt="Beautiful Zanzibar beach"
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -15,14 +16,10 @@ export const HeroSection = () => {
             Welcome to Zafiri
           </h1>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button 
-              className="bg-white text-black hover:bg-gray-100 transition-colors duration-300 text-lg px-6 py-2"
-            >
+            <Button variant="outline" size="lg" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white ">
               Itinerary creator
             </Button>
-            <Button 
-              className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-black transition-colors duration-300 text-lg px-6 py-2"
-            >
+            <Button variant="outline" size="lg" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white ">
               Enquire now
             </Button>
           </div>

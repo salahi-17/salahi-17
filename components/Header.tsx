@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image'
 
 const navItems = [
   { name: "About", link: "/about" },
@@ -19,13 +20,20 @@ const navItems = [
   { name: "Itinerary Creator", link: "/itinerary-creator" }
 ];
 
-
 export const Header = () => {
   return (
-    <header className="bg-white p-4 shadow-sm">
+    <header className="p-4 shadow-sm text-primary">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
-        Zafiri
+          <div className="relative w-[100px] h-[100px]">
+            <Image 
+              src="/ZAFIRI_Stacked-Logo-RGB.webp" 
+              alt="Zafiri" 
+              layout="fill"
+              objectFit="contain"
+              className="[filter:brightness(0)_saturate(100%)_invert(85%)_sepia(11%)_saturate(1004%)_hue-rotate(325deg)_brightness(99%)_contrast(92%)]"
+            />
+          </div>
         </Link>
         
         {/* Desktop Navigation */}
@@ -33,7 +41,7 @@ export const Header = () => {
           <ul className="flex space-x-4">
             {navItems.map((item, index) => (
               <li key={index}>
-                <Link href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
+                <Link href={item.link}>{item.name}</Link>
               </li>
             ))}
           </ul>

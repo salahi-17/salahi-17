@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import Image from 'next/image';
 
 const HistoryCulturePage = () => {
   const timelineEvents = [
@@ -76,12 +76,12 @@ const HistoryCulturePage = () => {
   ];
 
   return (
-    <div className="bg-[#fdf6f4]">
+    <div>
       {/* Hero Section */}
-      <div className="relative h-[400px] mb-12">
-        <img src="/api/placeholder/1600/900" alt="Zanzibar History" className="w-full h-full object-cover" />
+      <div className="relative h-[600px] mb-12">
+        <img src="/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg" alt="Zanzibar History" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">History & Culture</h1>
+          <h1 className="text-4xl md:text-7xl font-bold mb-4">History & Culture</h1>
         </div>
       </div>
 
@@ -92,25 +92,38 @@ const HistoryCulturePage = () => {
         </p>
       </div>
 
-      {/* Timeline */}
-      <div className="container mx-auto px-4">
+      {/* Timeline Section */}
+      <div className="container mx-auto px-4 py-12">
         {timelineEvents.map((event, index) => (
-          <div key={index} className="mb-16 relative">
-            <div className="absolute left-0 top-0 w-1 h-full bg-[#e75f40]"></div>
-            <Card className="ml-6">
-              <CardContent className="p-6">
-                <h2 className="text-3xl font-bold mb-4 text-[#e75f40]">{event.period}</h2>
+          <div key={index} className="mb-16 md:flex items-stretch">
+            {/* Period */}
+            <div className="md:w-1/4 pr-8 mb-4 md:mb-0">
+              <h2 className="text-4xl md:text-6xl font-bold text-gray-700">{event.period}</h2>
+            </div>
+
+            {/* Image and Events */}
+            <div className="md:w-3/4 flex flex-col md:flex-row">
+              {/* Image */}
+              <div className="md:w-1/2 mb-4 md:mb-0 md:pr-8">
+                <div className="aspect-w-4 aspect-h-3 relative">
+                  <img
+                    src={event.image}
+                    alt={`${event.period} image`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {/* Events */}
+              <div className="md:w-1/2 md:pl-8 md:border-l-2 border-[#e75f40]">
                 {event.events.map((subEvent, subIndex) => (
-                  <div key={subIndex} className="mb-4">
-                    <h3 className="text-xl font-semibold mb-2">{subEvent.title}</h3>
-                    <p>{subEvent.description}</p>
+                  <div key={subIndex} className="mb-6">
+                    <h3 className="text-xl md:text-2xl font-semibold mb-2 text-[#e75f40]">{subEvent.title}</h3>
+                    <p className="text-gray-600">{subEvent.description}</p>
                   </div>
                 ))}
-                {event.image && (
-                  <img src={event.image} alt={event.period} className="w-full h-64 object-cover rounded-lg mt-4" />
-                )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -118,14 +131,14 @@ const HistoryCulturePage = () => {
       {/* Image Gallery */}
       <div className="container mx-auto px-4 mb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <img src="/history/zanzibar-history-1.webp" alt="Zanzibar History 1" className="w-full h-64 object-cover rounded-lg" />
-          <img src="/history/zanzibar-history-2.webp" alt="Zanzibar History 2" className="w-full h-64 object-cover rounded-lg" />
-          <img src="/history/zanzibar-history-3.webp" alt="Zanzibar History 3" className="w-full h-64 object-cover rounded-lg" />
+          <img src="/history/zanzibar-history-1.webp" alt="Zanzibar History 1" className="w-full h-72 object-cover rounded-lg" />
+          <img src="/history/zanzibar-history-2.webp" alt="Zanzibar History 2" className="w-full h-72 object-cover rounded-lg" />
+          <img src="/history/zanzibar-history-3.webp" alt="Zanzibar History 3" className="w-full h-72 object-cover rounded-lg" />
         </div>
       </div>
 
       {/* Rising Promise Section */}
-      <div className="bg-[#e75f40] text-white py-12">
+      <div className="bg-primary py-12">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Rising Promise</h2>
           <p className="max-w-2xl mx-auto">

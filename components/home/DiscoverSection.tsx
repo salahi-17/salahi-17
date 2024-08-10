@@ -2,10 +2,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const discoverItems = [
-  { title: 'Zanzibar Cuisine', image: '/api/placeholder/1200/800' },
-  { title: 'Culture & History', image: '/api/placeholder/1200/800' },
-  { title: 'Activities', image: '/api/placeholder/1200/800' },
-  { title: 'Zanzibar Islands', image: '/api/placeholder/1200/800' },
+  { title: 'Zanzibar Cuisine', image: '/home/Spice-Tour.webp' },
+  { title: 'Culture & History', image: '/home/zanzibar-culture-and-history.webp' },
+  { title: 'Activities', image: '/home/zanzibar-activities.webp' },
+  { title: 'Zanzibar Islands', image: '/home/zanzibar-islands.webp' },
 ];
 
 export const DiscoverSection = () => {
@@ -15,14 +15,14 @@ export const DiscoverSection = () => {
         <h2 className="text-4xl font-bold mb-10 text-center">Discover more</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-10">
           {discoverItems.map((item, index) => (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className="w-full md:w-[350px] overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full"
             >
               <CardContent className="p-0 relative aspect-square">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
+                <img
+                  src={item.image}
+                  alt={item.title}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center transition-opacity duration-300 hover:bg-opacity-40">
