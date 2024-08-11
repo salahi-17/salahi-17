@@ -36,30 +36,27 @@ const excursions = [
 
 export const ExcursionsSection = () => {
   return (
-    <section className="py-8 md:py-16">
+    <section className="py-16 relative w-full overflow-hidden">
       <div className="container mx-auto px-4">
-        <Carousel className="bg-primary rounded-3xl shadow-md w-full max-w-5xl mx-auto overflow-hidden">
+        <Carousel className="bg-[#f8e1d8] rounded-3xl shadow-md w-full max-w-5xl mx-auto overflow-hidden">
           <CarouselContent>
             {excursions.map((excursion, index) => (
               <CarouselItem key={index}>
-                <div className="flex flex-col md:flex-row h-[500px]">
-                  <div className="flex justfiy-center md:w-1/2 h-full">
-                    <AspectRatio ratio={4/3} className="h-full">
-                      <Image
-                        src={excursion.image}
-                        alt={excursion.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-3xl"
-                      />
-                    </AspectRatio>
+                <div className="flex flex-col md:flex-row md:h-[400px]">
+                  <div className="hidden md:block md:w-1/2 h-full relative rounded-l-3xl overflow-hidden">
+                    <Image
+                      src={excursion.image}
+                      alt={excursion.title}
+                      layout="fill"
+                      objectFit="cover"
+                    />
                   </div>
-                  <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
-                    <h2 className="text-3xl font-bold mb-4">{excursion.title}</h2>
-                    <div className="mb-6 text-gray-600 overflow-y-auto max-h-[250px] pr-4">
+                  <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800">{excursion.title}</h2>
+                    <div className="mb-6 text-gray-600">
                       <p className="text-sm md:text-base">{excursion.description}</p>
                     </div>
-                    <Button variant="outline" size="lg" className="self-start rounded-none border-2 text-white border-white bg-primary hover:border-none hover:text-white ">
+                    <Button variant="outline" size="sm" className="self-start mt-2 px-6 py-2 rounded-md border border-white text-white bg-transparent hover:bg-white hover:text-gray-800">
                       Explore now
                     </Button>
                   </div>
@@ -67,8 +64,8 @@ export const ExcursionsSection = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2" />
-          <CarouselNext className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2" />
+          <CarouselPrevious className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2" />
+          <CarouselNext className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2" />
         </Carousel>
       </div>
     </section>

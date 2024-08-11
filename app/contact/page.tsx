@@ -12,7 +12,7 @@ const ContactPage = () => {
       {/* Hero Section */}
       <div className="relative h-[600px] bg-gradient-to-br from-gray-800 to-black mb-12">
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-          <p className="text-2xl font-bold mb-2 text-primary">DISCOVER ZANZIBAR WITH ZAFIRI</p>
+          <p className="text-lg md:text-2xl font-bold mb-2 text-primary text-center">DISCOVER ZANZIBAR WITH ZAFIRI</p>
           <h1 className="text-4xl md:text-7xl font-bold">Contact us</h1>
         </div>
       </div>

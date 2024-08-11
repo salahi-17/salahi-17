@@ -21,7 +21,7 @@ export default function DaySelector({ tripDays, startDate, selectedDate, handleD
             className="justify-between flex-grow"
             onClick={() => handleDaySelect(day)}
           >
-            <span>
+            <span className='text-lg'>
               Day {day}
             </span>
             {day !== 1 && (
