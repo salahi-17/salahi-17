@@ -1,4 +1,7 @@
 import React from 'react';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -17,27 +20,28 @@ const navItems = [
   { name: "Islands", link: "/islands" },
   { name: "History", link: "/history" },
   { name: "Contact Us", link: "/contact" },
-  { name: "Itinerary Creator", link: "/itinerary-creator" }
 ];
 
-export const Header = () => {
+export const Header = async () => {
+  const session = await getServerSession(authOptions);
+  const isNotAuthenticated = !session;
   return (
     <header className="p-4 shadow-sm text-primary">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
           <div className="relative w-[100px] h-[100px]">
-            <Image 
-              src="/ZAFIRI_Stacked-Logo-RGB.webp" 
-              alt="Zafiri" 
+            <Image
+              src="/ZAFIRI_Stacked-Logo-RGB.webp"
+              alt="Zafiri"
               layout="fill"
               objectFit="contain"
               className="[filter:brightness(0)_saturate(100%)_invert(85%)_sepia(11%)_saturate(1004%)_hue-rotate(325deg)_brightness(99%)_contrast(92%)]"
             />
           </div>
         </Link>
-        
+
         {/* Desktop Navigation */}
-        <nav className="hidden lg:block">
+        <nav className="hidden lg:flex items-center">
           <ul className="flex space-x-4">
             {navItems.map((item, index) => (
               <li key={index}>
@@ -46,6 +50,19 @@ export const Header = () => {
             ))}
           </ul>
         </nav>
+        <div className='space-x-4'>
+          <Button >
+            <Link href={"/itinerary-creator"}>
+              Itinerary Creator
+            </Link>
+          </Button>
+          <Button variant={"outline"} className='border-primary'>
+            {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+              Sign In
+            </Link>) : (
+              <Link href={"/profile"}>Profile</Link>)}
+          </Button>
+        </div>
 
         {/* Mobile Navigation */}
         <Sheet>

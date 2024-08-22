@@ -14,7 +14,6 @@ interface ScheduleViewProps {
 
 export default function ScheduleView({ selectedDate, startDate, schedule, updateSchedule }: ScheduleViewProps) {
   const timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, timeSlot: string) => {
     e.preventDefault();
     try {
