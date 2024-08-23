@@ -50,7 +50,7 @@ export const Header = async () => {
             ))}
           </ul>
         </nav>
-        <div className='space-x-4'>
+        <div className='hidden lg:flex space-x-4'>
           <Button >
             <Link href={"/itinerary-creator"}>
               Itinerary Creator
@@ -77,6 +77,19 @@ export const Header = async () => {
                 <Link key={index} href={item.link} className="text-gray-600 hover:text-gray-900">{item.name}</Link>
               ))}
             </nav>
+            <div className='flex flex-col pt-4 space-y-4'>
+              <Button >
+                <Link href={"/itinerary-creator"}>
+                  Itinerary Creator
+                </Link>
+              </Button>
+              <Button variant={"outline"} className='border-primary'>
+                {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+                  Sign In
+                </Link>) : (
+                  <Link href={"/profile"}>Profile</Link>)}
+              </Button>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
