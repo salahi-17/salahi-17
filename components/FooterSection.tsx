@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaTiktok, FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import { SubscriptionForm } from '@/components/SubscriptionForm';
+import { Button } from '@/components/ui/button';
 
 export const Footer = () => {
   return (
@@ -49,12 +49,7 @@ export const Footer = () => {
           <div className="w-full md:w-1/4">
             <h4 className="font-semibold mb-2">Don't miss out</h4>
             <p className="text-sm text-gray-600 mb-2">Subscribe for latest events, travel tips, personalized itineraries and more.</p>
-            <form className="space-y-2">
-              <Input type="text" placeholder="First Name" className="bg-white" />
-              <Input type="text" placeholder="Last Name" className="bg-white" />
-              <Input type="email" placeholder="Email" className="bg-white" />
-              <Button variant="outline" className="w-full bg-[#E5C1B5] text-white hover:bg-[#d8a795]">Subscribe</Button>
-            </form>
+            <SubscriptionForm />
           </div>
         </div>
         <div className="mt-8 pt-4 border-t text-center text-xs text-gray-500">
@@ -65,26 +60,26 @@ export const Footer = () => {
           </div>
           <div className="flex justify-center space-x-4 mb-4">
             <div className="flex justify-center mt-8 space-x-4">
-              <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
-                <Link href="https://www.facebook.com/profile.php?id=61556144293257">
+              <Link href="https://www.facebook.com/profile.php?id=61556144293257" passHref>
+                <Button variant="outline" size="icon" className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary">
                   <FaFacebookF size="24" />
-                </Link>
-              </Button>
-              <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
-                <Link href="https://www.instagram.com/zafiritravel/">
+                </Button>
+              </Link>
+              <Link href="https://www.instagram.com/zafiritravel/" passHref>
+                <Button variant="outline" size="icon" className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary">
                   <FaInstagram size="24" />
-                </Link>
-              </Button>
-              <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
-                <Link href="https://www.tiktok.com/@zafiritravel?lang=en">
+                </Button>
+              </Link>
+              <Link href="https://www.tiktok.com/@zafiritravel?lang=en" passHref>
+                <Button variant="outline" size="icon" className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary">
                   <FaTiktok size="24" />
-                </Link>
-              </Button>
-              <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
-                <Link href="https://www.linkedin.com/company/zafiritravel/">
+                </Button>
+              </Link>
+              <Link href="https://www.linkedin.com/company/zafiritravel/" passHref>
+                <Button variant="outline" size="icon" className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary">
                   <FaLinkedinIn size="24" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
           <p>© 2024 All Rights Reserved | Designed by Zafiri ltd</p>
