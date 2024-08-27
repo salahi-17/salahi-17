@@ -27,11 +27,11 @@ export default async function ProfilePage() {
     },
   });
 
-  // Transform dates to ISO strings
+  // Transform dates to Date objects
   const transformedItineraries = itineraries.map(itinerary => ({
     ...itinerary,
-    startDate: itinerary.startDate.toISOString(),
-    endDate: itinerary.endDate.toISOString(),
+    startDate: new Date(itinerary.startDate),
+    endDate: new Date(itinerary.endDate),
   }));
 
   return (

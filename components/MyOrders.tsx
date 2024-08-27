@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import CommonCard from '@/components/CommonCard';
 
 interface Order {
   id: string;
@@ -26,9 +25,9 @@ export default function MyOrders() {
       const response = await fetch('/api/my-orders');
       if (response.ok) {
         const data = await response.json();
-        // Filter for completed orders only
-        const completedOrders = data.filter((order: Order) => order.status.toLowerCase() === 'completed');
-        setOrders(completedOrders);
+        // Filter for completed (paid) orders only
+        const paidOrders = data.filter((order: Order) => order.status.toLowerCase() === 'completed');
+        setOrders(paidOrders);
       } else {
         console.error('Failed to fetch orders');
       }
@@ -38,24 +37,19 @@ export default function MyOrders() {
   };
 
   return (
-    <div>
+    <div className="container mx-auto py-8">
       <h2 className="text-2xl font-bold mb-4">My Orders</h2>
       {orders.length === 0 ? (
-        <p>You have no completed orders yet.</p>
+        <p>You have no paid orders yet.</p>
       ) : (
         <ul className="space-y-4">
           {orders.map((order) => (
-            <li key={order.id}>
-              <CommonCard
-                title={order.planName}
-                subtitle={`Order ID: ${order.id}`}
-                details={[
-                  { label: "Amount", value: `${order.currency} ${(order.amount / 100).toFixed(2)}` },
-                  { label: "Order Date", value: new Date(order.createdAt).toLocaleDateString() }
-                ]}
-                status={order.status}
-                actionLabel="View Itinerary"
-              />
+            <li key={order.id} className="border p-4 rounded-lg shadow">
+              <h3 className="text-xl font-semibold mb-2">{order.planName}</h3>
+              <p>Order ID: {order.id}</p>
+              <p>Amount: {order.currency} {(order.amount / 100).toFixed(2)}</p>
+              <p>Status: {order.status}</p>
+              <p>Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
             </li>
           ))}
         </ul>

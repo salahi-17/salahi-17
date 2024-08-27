@@ -26,8 +26,8 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
 export interface Itinerary {
   id: string;
   name: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 interface ProfileTabsProps {
