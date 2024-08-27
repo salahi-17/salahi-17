@@ -56,7 +56,7 @@ export async function POST(req: Request) {
             body: JSON.stringify({
                 amount: amount,
                 currency: currency,
-                redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success?itineraryId=${itinerary.id}`,
+                redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-complete?itineraryId=${itinerary.id}`,
                 customer: {
                     email: user.email,
                 },
