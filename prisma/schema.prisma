@@ -16,6 +16,7 @@ model User {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   itineraries Itinerary[]
+  orders          Order[]
 }
 
 model Activity {
@@ -60,4 +61,18 @@ model ItineraryItem {
   notes      String?
   activity   Activity     @relation(fields: [activityId], references: [id])
   day        ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  revolutOrderId  String   @unique
+  amount          Int
+  currency        String
+  planName        String
+  schedule        String   // JSON string of the schedule
+  status          String   // e.g., 'PENDING', 'COMPLETED', 'CANCELLED'
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

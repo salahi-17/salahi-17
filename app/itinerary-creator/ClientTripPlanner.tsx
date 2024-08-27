@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import DaySelector from './DaySelector';
 import ScheduleView from './ScheduleView';
 import ActivitySelector from './ActivitySelector';
+import CheckoutButton from './CheckoutButton';
 import { City, Schedule, Activity, CityCategories, ScheduleItem } from './types';
 
 interface ClientTripPlannerProps {
@@ -35,6 +36,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [cityData, setCityData] = useState<City[]>([]);
   const [planName, setPlanName] = useState<string>("");
   const [itineraryId, setItineraryId] = useState<string | null>(null);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -57,6 +59,19 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    // Calculate total price whenever the schedule changes
+    let price = 0;
+    Object.values(schedule).forEach(day => {
+      Object.values(day).forEach(timeSlot => {
+        timeSlot.forEach(item => {
+          price += item.price;
+        });
+      });
+    });
+    setTotalPrice(price);
+  }, [schedule]);
+
   const fetchItinerary = async (id: string) => {
     try {
       const response = await fetch(`/api/itineraries/${id}`);
@@ -64,10 +79,10 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         throw new Error('Failed to fetch itinerary');
       }
       const itinerary = await response.json();
-  
+
       // Transform the fetched data to match the local schedule structure
       const newSchedule: Schedule = {};
-      
+
       itinerary.days.forEach((day: any) => {
         const dateKey = format(new Date(day.date), 'yyyy-MM-dd');
         newSchedule[dateKey] = {
@@ -76,7 +91,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           Evening: [],
           Night: []
         };
-  
+
         day.items.forEach((item: any) => {
           const activity: ScheduleItem = {
             id: item.activity.id,
@@ -91,12 +106,12 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             updatedAt: item.activity.updatedAt,
             type: item.activity.category
           };
-  
+
           const timeSlot = getTimeSlotForOrder(item.order);
           newSchedule[dateKey][timeSlot].push(activity);
         });
       });
-  
+
       // Set the state
       setPlanName(itinerary.name);
       setStartDate(new Date(itinerary.startDate));
@@ -104,7 +119,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       setTripDays(itinerary.days.length);
       setSchedule(newSchedule);
       setSelectedDate(new Date(itinerary.startDate));
-  
+
     } catch (error) {
       console.error('Error fetching itinerary:', error);
       toast({
@@ -115,9 +130,9 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     }
   };
-  
 
-  
+
+
   useEffect(() => {
     const groupedData = initialCityData.reduce((acc, activity) => {
       if (!acc[activity.location]) {
@@ -154,11 +169,11 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       router.push('/auth/signin');
       return;
     }
-  
+
     try {
       const days = Object.entries(schedule).map(([date, daySchedule]) => ({
         date,
-        items: Object.entries(daySchedule).flatMap(([timeSlot, activities]) => 
+        items: Object.entries(daySchedule).flatMap(([timeSlot, activities]) =>
           activities.map((activity, index) => ({
             activityId: activity.id,
             order: getOrderForTimeSlot(timeSlot) + index,
@@ -166,10 +181,10 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           }))
         )
       }));
-  
+
       const method = itineraryId ? 'PUT' : 'POST';
       const url = itineraryId ? `/api/itineraries/${itineraryId}` : '/api/itineraries';
-  
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -182,7 +197,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           days
         }),
       });
-  
+
       if (response.ok) {
         toast({
           title: "Success",
@@ -203,7 +218,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     }
   };
-  
+
   const getOrderForTimeSlot = (timeSlot: string): number => {
     switch (timeSlot) {
       case 'Morning': return 0;
@@ -263,15 +278,15 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     }
   };
-  
+
   const handleDaySelect = (day: number) => {
     setSelectedDate(addDays(startDate, day - 1));
   };
-  
+
   const updateSchedule = (newSchedule: Schedule) => {
     setSchedule(newSchedule);
   };
-  
+
   const isItemScheduled = (item: ScheduleItem, timeSlot: string): boolean => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     return schedule[dateKey]?.[timeSlot]?.some(scheduledItem => scheduledItem.name === item.name) || false;
@@ -298,6 +313,16 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               />
             </PopoverContent>
           </Popover>
+          <div className="mt-auto">
+            <p className="text-lg font-semibold mb-2">Total Price: ${totalPrice.toFixed(2)}</p>
+            <CheckoutButton
+              totalPrice={totalPrice}
+              planName={planName}
+              schedule={schedule}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
         </div>
         <div>
           <label htmlFor="planName" className="block text-sm font-medium text-gray-700">Plan Name</label>
