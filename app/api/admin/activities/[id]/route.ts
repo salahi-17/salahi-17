@@ -3,8 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile } from "fs/promises";
-import path from "path";
+import cloudinary from "@/lib/cloudinary";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -24,15 +23,29 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const amenities = JSON.parse(formData.get("amenities") as string);
     const image = formData.get("image") as File | null;
 
-    let imagePath = undefined;
+    let imageUrl = undefined;
     if (image) {
       const bytes = await image.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const imageName = `${Date.now()}-${image.name}`;
-      imagePath = path.join(process.cwd(), "public", "uploads", imageName);
-      await writeFile(imagePath, buffer);
-      imagePath = `/uploads/${imageName}`;
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { resource_type: "image", folder: "activities" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(buffer);
+      });
+
+      imageUrl = (result as any).secure_url;
+
+      // Delete old image if it exists
+      const oldActivity = await prisma.activity.findUnique({ where: { id } });
+      if (oldActivity?.image) {
+        const publicId = oldActivity.image.split('/').pop()?.split('.')[0];
+        await cloudinary.uploader.destroy(`activities/${publicId}`);
+      }
     }
 
     const activity = await prisma.activity.update({
@@ -44,7 +57,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         description,
         price,
         amenities,
-        ...(imagePath && { image: imagePath }),
+        ...(imageUrl && { image: imageUrl }),
       },
     });
 
@@ -64,6 +77,13 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
   try {
     const { id } = params;
+    const activity = await prisma.activity.findUnique({ where: { id } });
+
+    if (activity?.image) {
+      const publicId = activity.image.split('/').pop()?.split('.')[0];
+      await cloudinary.uploader.destroy(`activities/${publicId}`);
+    }
+
     await prisma.activity.delete({
       where: { id },
     });

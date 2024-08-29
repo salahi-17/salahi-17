@@ -3,8 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile } from "fs/promises";
-import path from "path";
+import cloudinary from "@/lib/cloudinary";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -30,9 +29,15 @@ export async function POST(req: Request) {
     const bytes = await image.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const imageName = `${Date.now()}-${image.name}`;
-    const imagePath = path.join(process.cwd(), "public", "uploads", imageName);
-    await writeFile(imagePath, buffer);
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: "image", folder: "activities" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(buffer);
+    });
 
     const activity = await prisma.activity.create({
       data: {
@@ -42,7 +47,7 @@ export async function POST(req: Request) {
         description,
         price,
         amenities,
-        image: `/uploads/${imageName}`,
+        image: (result as any).secure_url,
       },
     });
 
