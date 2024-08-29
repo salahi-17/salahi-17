@@ -3,8 +3,9 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import Image from 'next/image';
+import { getPlaceholderImage } from '@/utils/images';
 
-const ZanzibarCuisinePage = () => {
+const ZanzibarCuisinePage = async () => {
   const foodCategories = [
     {
       title: "MAIN MEALS",
@@ -42,12 +43,32 @@ const ZanzibarCuisinePage = () => {
       ]
     }
   ];
+const heroImageData = await getPlaceholderImage("/food-and-culture/food-and-culture-zanzibar.png");
+
+  const categoriesWithPlaceholders = await Promise.all(
+    foodCategories.map(async (category) => ({
+      ...category,
+      items: await Promise.all(
+        category.items.map(async (item) => ({
+          ...item,
+          imageData: await getPlaceholderImage(item.image),
+        }))
+      ),
+    }))
+  );
 
   return (
     <>
       {/* Hero Section */}
       <div className="relative h-[600px] mb-12">
-        <img src="/food-and-culture/food-and-culture-zanzibar.png" alt="Zanzibar cuisine" className="w-full h-full object-cover" />
+        <Image
+          src="/food-and-culture/food-and-culture-zanzibar.png"
+          alt="Zanzibar cuisine"
+          fill
+          style={{ objectFit: "cover" }}
+          placeholder="blur"
+          blurDataURL={heroImageData.placeholder}
+        />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
           <h1 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-bold text-white text-center">
             Zanzibar cuisine
@@ -56,7 +77,7 @@ const ZanzibarCuisinePage = () => {
       </div>
       <div className="container mx-auto px-4 py-8">
         {/* Food Categories */}
-        {foodCategories.map((category, index) => (
+        {categoriesWithPlaceholders.map((category, index) => (
           <div key={index} className="mb-12">
             <h2 className="text-3xl font-bold mb-6 text-center">{category.title}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,9 +87,11 @@ const ZanzibarCuisinePage = () => {
                     <Image
                       src={item.image}
                       alt={item.name}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
                       className="rounded-xl"
+                      placeholder="blur"
+                      blurDataURL={item.imageData.placeholder}
                     />
                   </AspectRatio>
                   <CardContent className="flex-grow">

@@ -1,12 +1,30 @@
 import React from 'react';
+import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FaTiktok, FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import Link from 'next/link';
+import { getPlaceholderImage } from '@/utils/images';
 
-const ContactPage = () => {
+const ContactPage = async () => {
+  const galleryImages = [
+    "/contact/0-3e4e4a76-10fb-4c05-b998-56c7a80db400-800x800.webp",
+    "/contact/0-5ce404db-ade4-4474-b4a0-ba38d8481e0b-800x800.jpg",
+    "/contact/0-327a226c-fb7f-41da-aec6-1d427661c42e-800x800.jpg",
+    "/contact/0-0775daac-b81d-4689-8fc0-52f4e3d95aec-800x800.webp"
+  ];
+
+  const galleryImagesWithPlaceholders = await Promise.all(
+    galleryImages.map(async (image) => ({
+      src: image,
+      imageData: await getPlaceholderImage(image),
+    }))
+  );
+
+  const wereHereImageData = await getPlaceholderImage("/contact/0-7fa7be3a-45cc-4fb7-84e7-66936d5b5e75-800x800.webp");
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -45,22 +63,22 @@ const ContactPage = () => {
         <div className="flex justify-center mt-8 space-x-4">
           <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
             <Link href="https://www.facebook.com/profile.php?id=61556144293257">
-              <FaFacebookF size="24"/>
+              <FaFacebookF size="24" />
             </Link>
           </Button>
           <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
             <Link href="https://www.instagram.com/zafiritravel/">
-              <FaInstagram size="24"/>
+              <FaInstagram size="24" />
             </Link>
           </Button>
           <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
             <Link href="https://www.tiktok.com/@zafiritravel?lang=en">
-              <FaTiktok size="24"/>
+              <FaTiktok size="24" />
             </Link>
           </Button>
           <Button variant="outline" size={"icon"} className="rounded-full w-16 h-16 p-0 bg-primary text-white border-primary hover:bg-transparent hover:text-primary ">
             <Link href="https://www.linkedin.com/company/zafiritravel/">
-              <FaLinkedinIn size="24"/>
+              <FaLinkedinIn size="24" />
             </Link>
           </Button>
         </div>
@@ -71,11 +89,20 @@ const ContactPage = () => {
         <div className="container mx-auto px-4">
           <p className="text-primary text-center mb-2">EXPLORE OUR TRAVEL GALLERY</p>
           <h2 className="text-3xl font-bold text-white text-center mb-8">Visual Journey of Zanzibar</h2>
-          <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <img src="/contact/0-3e4e4a76-10fb-4c05-b998-56c7a80db400-800x800.webp" alt="Zanzibar Waterfall" className="w-full h-64 object-cover rounded-lg" />
-            <img src="/contact/0-5ce404db-ade4-4474-b4a0-ba38d8481e0b-800x800.jpg" alt="Zanzibar Market" className="w-full h-64 object-cover rounded-lg" />
-            <img src="/contact/0-327a226c-fb7f-41da-aec6-1d427661c42e-800x800.jpg" alt="Zanzibar Landscape" className="w-full h-64 object-cover rounded-lg" />
-            <img src="/contact/0-0775daac-b81d-4689-8fc0-52f4e3d95aec-800x800.webp" alt="Zanzibar Interior" className="w-full h-64 object-cover rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {galleryImagesWithPlaceholders.map((image, index) => (
+              <div key={index} className="relative h-64">
+                <Image
+                  src={image.src}
+                  alt={`Zanzibar Scene ${index + 1}`}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="rounded-lg"
+                  placeholder="blur"
+                  blurDataURL={image.imageData.placeholder}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -89,8 +116,16 @@ const ContactPage = () => {
               Discover the beauty of Zanzibar while enjoying peace of mind. Our team is available 24/7 to help you plan your perfect trip. Whether you need travel advice, destination information, or just want to say hello, we're here for you.
             </p>
           </div>
-          <div className="md:w-1/2">
-            <img src="/contact/0-7fa7be3a-45cc-4fb7-84e7-66936d5b5e75-800x800.webp" alt="Zanzibar Sunset" className="w-full h-96 object-cover rounded-lg transition-all duration-[2000ms] ease-in-out transform group-hover:scale-110" />
+          <div className="md:w-1/2 relative h-96">
+            <Image
+              src="/contact/0-7fa7be3a-45cc-4fb7-84e7-66936d5b5e75-800x800.webp"
+              alt="Zanzibar Sunset"
+              fill
+              style={{ objectFit: "cover" }}
+              className="rounded-lg transition-all duration-[2000ms] ease-in-out transform group-hover:scale-110"
+              placeholder="blur"
+              blurDataURL={wereHereImageData.placeholder}
+            />
           </div>
         </div>
       </div>

@@ -1,10 +1,14 @@
 import React from 'react';
+import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 
 interface Hotel {
   name: string;
   location: string;
-  image: string;
+  imageData: {
+    src: string;
+    placeholder: string;
+  };
 }
 
 interface CustomHotelCardProps {
@@ -13,11 +17,15 @@ interface CustomHotelCardProps {
 
 const CustomHotelCard: React.FC<CustomHotelCardProps> = ({ hotel }) => (
   <div className="bg-white rounded-3xl overflow-hidden shadow-lg">
-    <div className="relative overflow-hidden group">
-      <img 
-        src={hotel.image} 
+    <div className="relative overflow-hidden group h-64">
+      <Image 
+        src={hotel.imageData.src} 
         alt={hotel.name} 
-        className="w-full h-64 object-cover transition-all duration-[2000ms] ease-in-out transform group-hover:scale-110"
+        layout="fill"
+        objectFit="cover"
+        placeholder="blur"
+        blurDataURL={hotel.imageData.placeholder}
+        className="transition-all duration-[2000ms] ease-in-out transform group-hover:scale-110"
       />
     </div>
     <div className="p-6">

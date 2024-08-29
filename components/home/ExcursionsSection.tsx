@@ -7,14 +7,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
 import Image from "next/image"
-
+import { getPlaceholderImage } from '@/utils/images';
 
 const excursions = [
   {
     title: "Excursions",
-    description: "Dhow Cruises: Traditional wooden dhows are a common sight along Zanzibar’s coastline. Dhows offer serene and scenic cruises, allowing visitors to enjoy the coastline, islands, and sunset views. Some dhow cruises also include snorkeling stops and fresh seafood meals on board.",
+    description: "Dhow Cruises: Traditional wooden dhows are a common sight along Zanzibar's coastline. Dhows offer serene and scenic cruises, allowing visitors to enjoy the coastline, islands, and sunset views. Some dhow cruises also include snorkeling stops and fresh seafood meals on board.",
     image: "/home/denys-nevozhai-guNIjIuUcgY-unsplash-scaled.webp"
   },
   {
@@ -24,7 +23,7 @@ const excursions = [
   },
   {
     title: "Attractions you must visit  ",
-    description: "Attractions to Visit: Zanzibar is a treasure trove of attractions that highlight its rich heritage and vibrant culture. Notable destinations include the ancient Stone Town with its winding alleys and bustling markets, and the pristine beaches of Nungwi and Paje. The Jozani Chwaka Bay National Park offers a glimpse into the island’s unique wildlife and ecosystems. ",
+    description: "Attractions to Visit: Zanzibar is a treasure trove of attractions that highlight its rich heritage and vibrant culture. Notable destinations include the ancient Stone Town with its winding alleys and bustling markets, and the pristine beaches of Nungwi and Paje. The Jozani Chwaka Bay National Park offers a glimpse into the island's unique wildlife and ecosystems. ",
     image: "/home/zanzibar-attractions.webp"
   },
   {
@@ -34,21 +33,30 @@ const excursions = [
   }
 ];
 
-export const ExcursionsSection = () => {
+export const ExcursionsSection = async () => {
+  const excursionsWithPlaceholders = await Promise.all(
+    excursions.map(async (excursion) => {
+      const imageData = await getPlaceholderImage(excursion.image);
+      return { ...excursion, imageData };
+    })
+  );
+
   return (
     <section className="py-16 relative w-full overflow-hidden">
       <div className="container mx-auto px-4">
         <Carousel className="bg-[#f8e1d8] rounded-3xl shadow-md w-full max-w-5xl mx-auto overflow-hidden">
           <CarouselContent>
-            {excursions.map((excursion, index) => (
+            {excursionsWithPlaceholders.map((excursion, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col md:flex-row md:h-[400px]">
                   <div className="hidden md:block md:w-1/2 h-full relative rounded-l-3xl overflow-hidden">
                     <Image
-                      src={excursion.image}
+                      src={excursion.imageData.src}
                       alt={excursion.title}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
+                      placeholder="blur"
+                      blurDataURL={excursion.imageData.placeholder}
                     />
                   </div>
                   <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">

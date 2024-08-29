@@ -1,6 +1,7 @@
-"use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
+import { getPlaceholderImage } from '@/utils/images'
+import { TabContent } from './TabContent'; // We'll create this client component
 
 interface TabContent {
   title: string;
@@ -26,8 +27,13 @@ const tabContents: TabContent[] = [
   }
 ];
 
-export const MakeADifference: React.FC = () => {
-  const [activeTab, setActiveTab] = useState(0);
+export const MakeADifference = async () => {
+  const tabContentsWithPlaceholders = await Promise.all(
+    tabContents.map(async (tab) => {
+      const imageData = await getPlaceholderImage(tab.image);
+      return { ...tab, imageData };
+    })
+  );
 
   return (
     <section className="py-16 bg-primary w-full text-white">
@@ -37,35 +43,7 @@ export const MakeADifference: React.FC = () => {
           At Zafiri, we are dedicated to upholding the highest standards in all that we do. Our values guide us in delivering
           exceptional service and fostering a positive impact on society and the environment.
         </p>
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/3 mb-8 md:mb-0">
-            {tabContents.map((tab, index) => (
-              <div
-                key={index}
-                className={`py-3 px-6 mb-2 rounded-lg cursor-pointer transition-colors ${
-                  activeTab === index ? 'bg-white text-[#E5C1B5]' : 'bg-transparent text-white hover:bg-white/10'
-                }`}
-                onClick={() => setActiveTab(index)}
-              >
-                {tab.title}
-              </div>
-            ))}
-          </div>
-          <div className="md:w-2/3 md:pl-8">
-            <div className="bg-white p-6 rounded-lg text-gray-800">
-              <Image
-                src={tabContents[activeTab].image}
-                alt={tabContents[activeTab].title}
-                width={200}
-                height={100}
-                layout="responsive"
-                className="rounded-lg mb-4"
-              />
-              <h3 className="text-2xl font-bold mb-4">{tabContents[activeTab].title}</h3>
-              <p className="whitespace-pre-line">{tabContents[activeTab].content}</p>
-            </div>
-          </div>
-        </div>
+        <TabContent tabContents={tabContentsWithPlaceholders} />
       </div>
     </section>
   );

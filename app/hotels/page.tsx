@@ -1,12 +1,13 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Image from 'next/image';
 import { HotelsSection } from '@/components/HotelCard';
 import { AmenitiesCarousel } from '@/components/AmenitiesCarousel';
 import TestimonialsSection from '@/components/HotelsTestimonials';
+import { getPlaceholderImage } from '@/utils/images';
 
-const HotelsPage = () => {
+const HotelsPage = async () => {
+  const heroImageData = await getPlaceholderImage("/hotels/hotels-hero.png");
+
   const hotels = [
     { name: "Park Hyatt", location: "Zanzibar | Stone Town", image: "/hotels/Park-Hyatt.webp" },
     { name: "Serena", location: "Zanzibar | Stone Town", image: "/hotels/Serena-.webp" },
@@ -18,6 +19,13 @@ const HotelsPage = () => {
     { name: "THE ISLAND PONGWE", location: "Zanzibar | Pongwe", image: "/hotels/THE-ISLAND-PONGWE.webp" },
     { name: "Bububu Bungalow", location: "Zanzibar | Bububu", image: "/hotels/Babalao-Bungalos.webp" },
   ];
+
+  const hotelsWithPlaceholders = await Promise.all(
+    hotels.map(async (hotel) => {
+      const imageData = await getPlaceholderImage(hotel.image);
+      return { ...hotel, imageData };
+    })
+  );
 
   const amenities = [
     { name: "Hot Tub", image: "/hotels/hot-tub.webp" },
@@ -32,8 +40,15 @@ const HotelsPage = () => {
     <>
       {/* Hero Section */}
       <div className="relative h-[600px] mb-12">
-        <img src="/hotels/hotels-hero.png" alt="Zanzibar Hotels" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
+      <Image
+          src={heroImageData.src}
+          alt="Zanzibar Hotels"
+          layout="fill"
+          objectFit="cover"
+          placeholder="blur"
+          blurDataURL={heroImageData.placeholder}
+          priority
+        />        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
           <h1 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-bold text-white text-center">
             Hotels
           </h1>
@@ -42,7 +57,7 @@ const HotelsPage = () => {
       <div className="container mx-auto px-4 py-8">
 
         {/* Hotels Section */}
-        <HotelsSection hotels={hotels} />
+        <HotelsSection hotels={hotelsWithPlaceholders} />
 
         { /* Amenities Courasel */}
         <AmenitiesCarousel amenities={amenities} />

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useInView } from 'react-intersection-observer';
+import { getPlaceholderImage } from '@/utils/images';
 
 interface Stat {
   value: number;
@@ -48,19 +49,33 @@ const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
 };
 
 export const ZafiriEmpire: React.FC = () => {
+  const [imageData, setImageData] = useState<{ src: string; placeholder: string } | null>(null);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      const data = await getPlaceholderImage("/about/zafiri-empire.webp");
+      setImageData(data);
+    };
+    loadImage();
+  }, []);
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
-            <Image
-              src="/about/zafiri-empire.webp" // Replace with your actual image path
-              alt="Zafiri partnerships"
-              width={600}
-              height={400}
-              layout="responsive"
-              className="rounded-lg border-4 border-[#E5C1B5]"
-            />
+            {imageData && (
+              <Image
+                src={imageData.src}
+                alt="Zafiri partnerships"
+                width={600}
+                height={400}
+                layout="responsive"
+                className="rounded-lg border-4 border-[#E5C1B5]"
+                placeholder="blur"
+                blurDataURL={imageData.placeholder}
+              />
+            )}
           </div>
           <div className="md:w-1/2 md:pl-12">
             <p className="text-[#E5C1B5] uppercase font-semibold mb-2">TOGETHER</p>

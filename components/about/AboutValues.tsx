@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { getPlaceholderImage } from '@/utils/images';
 
 interface Value {
   title: string;
@@ -29,7 +30,9 @@ const values: Value[] = [
   }
 ];
 
-export const OurValues: React.FC = () => {
+export const OurValues = async () => {
+  const imageData = await getPlaceholderImage("/about/0-d7d21274-c0bf-4315-aa0f-0e4702f507d3-800x800.webp");
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -47,11 +50,12 @@ export const OurValues: React.FC = () => {
           </div>
           <div className="md:w-1/2 mt-8 md:mt-0">
             <Image
-              src="/about/0-d7d21274-c0bf-4315-aa0f-0e4702f507d3-800x800.webp"
+              src={imageData.src}
               alt="Zafiri's commitment to nature and sustainability"
               width={600}
               height={400}
-              layout="responsive"
+              placeholder="blur"
+              blurDataURL={imageData.placeholder}
               className="rounded-lg"
             />
           </div>

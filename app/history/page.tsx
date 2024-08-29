@@ -1,7 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
+import { getPlaceholderImage } from '@/utils/images';
 
-const HistoryCulturePage = () => {
+const HistoryCulturePage = async () => {
   const timelineEvents = [
     {
       period: "2000s",
@@ -75,12 +76,41 @@ const HistoryCulturePage = () => {
     }
   ];
 
+  const heroImageData = await getPlaceholderImage("/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg");
+
+  const timelineEventsWithPlaceholders = await Promise.all(
+    timelineEvents.map(async (event) => ({
+      ...event,
+      imageData: await getPlaceholderImage(event.image),
+    }))
+  );
+
+  const galleryImages = [
+    "/history/zanzibar-history-1.webp",
+    "/history/zanzibar-history-2.webp",
+    "/history/zanzibar-history-3.webp",
+  ];
+
+  const galleryImagesWithPlaceholders = await Promise.all(
+    galleryImages.map(async (image) => ({
+      src: image,
+      imageData: await getPlaceholderImage(image),
+    }))
+  );
+
   return (
     <div>
       {/* Hero Section */}
       <div className="relative h-[600px] mb-12">
-        <img src="/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg" alt="Zanzibar History" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
+        <Image
+          src="/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg"
+          alt="Zanzibar History"
+          fill
+          style={{ objectFit: "cover" }}
+          placeholder="blur"
+          blurDataURL={heroImageData.placeholder}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white z-10">
           <h1 className="text-4xl md:text-7xl font-bold mb-4">History & Culture</h1>
         </div>
       </div>
@@ -94,7 +124,7 @@ const HistoryCulturePage = () => {
 
       {/* Timeline Section */}
       <div className="container mx-auto px-4 py-12">
-        {timelineEvents.map((event, index) => (
+        {timelineEventsWithPlaceholders.map((event, index) => (
           <div key={index} className="mb-16 md:flex items-stretch">
             {/* Period */}
             <div className="md:w-1/4 pr-8 mb-4 md:mb-0">
@@ -104,12 +134,17 @@ const HistoryCulturePage = () => {
             {/* Image and Events */}
             <div className="md:w-3/4 flex flex-col md:flex-row">
               {/* Image */}
-              <div className="md:w-1/2 mb-4 md:mb-0 md:pr-8">
-                <div className="aspect-w-4 aspect-h-3 relative">
-                  <img
+              <div className="md:w-1/2 mb-4 md:mb-0 md:pr-8 relative">
+                <div className="relative w-full h-0 pb-[75%]"> {/* Maintain aspect ratio */}
+                  <Image
                     src={event.image}
                     alt={`${event.period} image`}
-                    className="w-full h-full object-cover rounded-lg"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    style={{ objectFit: "cover" }}
+                    className="rounded-lg z-10"
+                    placeholder="blur"
+                    blurDataURL={event.imageData.placeholder}
                   />
                 </div>
               </div>
@@ -131,9 +166,19 @@ const HistoryCulturePage = () => {
       {/* Image Gallery */}
       <div className="container mx-auto px-4 mb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <img src="/history/zanzibar-history-1.webp" alt="Zanzibar History 1" className="w-full h-72 object-cover rounded-lg" />
-          <img src="/history/zanzibar-history-2.webp" alt="Zanzibar History 2" className="w-full h-72 object-cover rounded-lg" />
-          <img src="/history/zanzibar-history-3.webp" alt="Zanzibar History 3" className="w-full h-72 object-cover rounded-lg" />
+          {galleryImagesWithPlaceholders.map((image, index) => (
+            <div key={index} className="relative h-72">
+              <Image
+                src={image.src}
+                alt={`Zanzibar History ${index + 1}`}
+                fill
+                style={{ objectFit: "cover" }}
+                className="rounded-lg z-10"
+                placeholder="blur"
+                blurDataURL={image.imageData.placeholder}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
