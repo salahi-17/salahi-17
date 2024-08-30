@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Loader from '@/components/Loader';
 
 export function withAdminAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>
@@ -31,7 +32,7 @@ export function withAdminAuth<P extends object>(
     }, [status, router]);
 
     if (status === 'loading' || !isAdmin) {
-      return <div>Loading...</div>;
+      return <Loader size='large'/>;
     }
 
     return <WrappedComponent {...props} />;

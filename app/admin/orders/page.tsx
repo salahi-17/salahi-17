@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,12 +16,12 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,59 +34,59 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const sortField = (searchParams.sort as string) || 'createdAt';
-  const sortOrder = (searchParams.order as 'asc' | 'desc') || 'desc';
+  const search = (searchParams.search as string) || '';
+
+  let where: Prisma.OrderWhereInput = {};
+
+  if (search) {
+    where = {
+      OR: [
+        { id: { contains: search, mode: 'insensitive' } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { planName: { contains: search, mode: 'insensitive' } },
+        { status: { contains: search, mode: 'insensitive' } },
+      ],
+    };
+  }
 
   const orders = await prisma.order.findMany({
+    where,
     include: {
       user: true,
     },
     orderBy: {
-      [sortField]: sortOrder,
+      createdAt: 'desc',
     },
     skip,
     take: limit,
   });
 
-  const totalOrders = await prisma.order.count();
+  const totalOrders = await prisma.order.count({ where });
   const totalPages = Math.ceil(totalOrders / limit);
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Order Management</h1>
+      <div className="mb-4">
+        <form className='flex'>
+          <Input
+            type="text"
+            placeholder="Search orders..."
+            name="search"
+            defaultValue={search}
+          />
+          <Button type="submit" className="ml-2">Search</Button>
+        </form>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
-              <Link href={`/admin/orders?sort=id&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                Order ID
-              </Link>
-            </TableHead>
-            <TableHead>
-              <Link href={`/admin/orders?sort=user.email&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                User
-              </Link>
-            </TableHead>
-            <TableHead>
-              <Link href={`/admin/orders?sort=planName&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                Plan Name
-              </Link>
-            </TableHead>
-            <TableHead>
-              <Link href={`/admin/orders?sort=amount&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                Amount
-              </Link>
-            </TableHead>
-            <TableHead>
-              <Link href={`/admin/orders?sort=status&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                Status
-              </Link>
-            </TableHead>
-            <TableHead>
-              <Link href={`/admin/orders?sort=createdAt&order=${sortOrder === 'asc' ? 'desc' : 'asc'}`}>
-                Created At
-              </Link>
-            </TableHead>
+            <TableHead>Order ID</TableHead>
+            <TableHead>User</TableHead>
+            <TableHead>Plan Name</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -110,17 +111,20 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
       <Pagination className="mt-4">
         <PaginationContent>
           <PaginationItem>
-            <PaginationPrevious href={page > 1 ? `/admin/orders?page=${page - 1}` : '#'} />
+            <PaginationPrevious href={page > 1 ? `/admin/orders?page=${page - 1}&search=${search}` : '#'} />
           </PaginationItem>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
             <PaginationItem key={pageNum}>
-              <PaginationLink href={`/admin/orders?page=${pageNum}`} isActive={pageNum === page}>
+              <PaginationLink 
+                href={`/admin/orders?page=${pageNum}&search=${search}`} 
+                isActive={pageNum === page}
+              >
                 {pageNum}
               </PaginationLink>
             </PaginationItem>
           ))}
           <PaginationItem>
-            <PaginationNext href={page < totalPages ? `/admin/orders?page=${page + 1}` : '#'} />
+            <PaginationNext href={page < totalPages ? `/admin/orders?page=${page + 1}&search=${search}` : '#'} />
           </PaginationItem>
         </PaginationContent>
       </Pagination>

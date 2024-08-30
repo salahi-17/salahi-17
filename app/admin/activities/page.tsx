@@ -43,7 +43,6 @@ export default function AdminActivityPage() {
     const response = await fetch("/api/admin/activities");
     if (response.ok) {
       const data = await response.json();
-      // Ensure the dates are properly parsed
       const parsedActivities = data.map((activity: any) => ({
         ...activity,
         createdAt: new Date(activity.createdAt),

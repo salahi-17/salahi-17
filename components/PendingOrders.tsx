@@ -4,17 +4,19 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import Loader from "@/components/Loader";
 
 interface PendingOrder {
   id: string;
+  revolutOrderId: string;
   planName: string;
   amount: number;
   currency: string;
-  checkoutUrl: string;
 }
 
 export default function PendingOrders() {
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
   const { toast } = useToast();
 
@@ -25,6 +27,7 @@ export default function PendingOrders() {
   }, [session]);
 
   const fetchPendingOrders = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/pending-orders');
       if (!response.ok) {
@@ -40,12 +43,23 @@ export default function PendingOrders() {
         duration: 3000,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handlePayment = (checkoutUrl: string) => {
-    window.location.href = checkoutUrl;
+  const handlePayment = (revolutOrderId: string) => {
+    const checkoutUrl = `https://sandbox-checkout.revolut.com/payment-link/${revolutOrderId}`;
+    window.open(checkoutUrl, '_blank');
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <Loader size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -55,10 +69,13 @@ export default function PendingOrders() {
       ) : (
         <ul className="space-y-4">
           {pendingOrders.map((order) => (
-            <li key={order.id} className="border p-4 rounded-md">
+            <li key={order.id} className="border p-4 rounded-md shadow-sm">
               <h2 className="text-xl font-semibold">{order.planName}</h2>
-              <p>Amount: {order.currency} {(order.amount / 100).toFixed(2)}</p>
-              <Button onClick={() => handlePayment(order.checkoutUrl)} className="mt-2">
+              <p className="text-gray-600">Amount: {order.currency} {(order.amount / 100).toFixed(2)}</p>
+              <Button 
+                onClick={() => handlePayment(order.revolutOrderId)} 
+                className="mt-2 bg-primary hover:bg-primary-dark text-white"
+              >
                 Complete Payment
               </Button>
             </li>

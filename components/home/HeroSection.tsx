@@ -16,7 +16,6 @@ export const HeroSection = async () => {
         quality={100}
         placeholder="blur"
         blurDataURL={imageWithPlaceholder.placeholder}
-        priority
       />
       <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
         <div className="text-center max-w-3xl mx-auto px-4">

@@ -313,16 +313,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               />
             </PopoverContent>
           </Popover>
-          <div className="mt-auto">
-            <p className="text-lg font-semibold mb-2">Total Price: ${totalPrice.toFixed(2)}</p>
-            <CheckoutButton
-              totalPrice={totalPrice}
-              planName={planName}
-              schedule={schedule}
-              startDate={startDate}
-              endDate={endDate}
-            />
-          </div>
         </div>
         <div>
           <label htmlFor="planName" className="block text-sm font-medium text-gray-700">Plan Name</label>
@@ -351,6 +341,16 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             <PlusIcon className="mr-2 h-4 w-4" />
             Add Day
           </Button>
+          <div className="mt-auto">
+            <p className="text-lg font-semibold mb-2">Total Price: ${totalPrice.toFixed(2)}</p>
+            <CheckoutButton
+              totalPrice={totalPrice}
+              planName={planName}
+              schedule={schedule}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
         </ScrollArea>
       </aside>
       <ScheduleView

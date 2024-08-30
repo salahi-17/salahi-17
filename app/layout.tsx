@@ -8,6 +8,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/FooterSection";
 import { Toaster } from "@/components/ui/toaster"
 import SessionProviderWrapper from "@/components/SessionProviderWrapper";
+import SurveyPopup from "@/components/SurveyPopup";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default async function RootLayout({
         <Footer/>
         <Toaster />
         </SessionProviderWrapper>
+        <SurveyPopup />
       </body>
     </html>
   );
