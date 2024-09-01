@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { getPlaceholderImage } from '@/utils/images';
+import Link from 'next/link';
 
 export const HeroSection = async () => {
   const imageWithPlaceholder = await getPlaceholderImage("/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg");
@@ -23,12 +24,16 @@ export const HeroSection = async () => {
             Welcome to Zafiri
           </h1>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <Link href="/itinerary-creator">
             <Button variant="outline" size="lg" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white hover:bg-white/10">
               Itinerary creator
             </Button>
+            </Link>
+            <Link href="/contact">
             <Button variant="outline" size="lg" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white hover:bg-white/10">
               Enquire now
             </Button>
+            </Link>
           </div>
         </div>
       </div>

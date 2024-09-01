@@ -51,17 +51,22 @@ export const Header = async () => {
           </ul>
         </nav>
         <div className='hidden lg:flex space-x-4'>
-          <Button >
-            <Link href={"/itinerary-creator"}>
+          <Link href={"/itinerary-creator"}>
+            <Button >
               Itinerary Creator
-            </Link>
-          </Button>
-          <Button variant={"outline"} className='border-primary'>
-            {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+            </Button>
+          </Link>
+
+          {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+            <Button variant={"outline"} className='border-primary'>
               Sign In
-            </Link>) : (
-              <Link href={"/profile"}>Profile</Link>)}
-          </Button>
+            </Button>
+          </Link>) : (
+            <Link href={"/profile"}>
+              <Button variant={"outline"} className='border-primary'>
+                Profile
+              </Button>
+            </Link>)}
         </div>
 
         {/* Mobile Navigation */}
