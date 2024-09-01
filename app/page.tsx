@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { ExcursionsSection } from "@/components/home/ExcursionsSection";
 import { DiscoverSection } from "@/components/home/DiscoverSection";
+import SurveyInvitation from "@/components/home/SurveyInvitation";
 
 export default async function Home() {
   return (
@@ -8,6 +9,7 @@ export default async function Home() {
       <HeroSection />
       <ExcursionsSection />
       <DiscoverSection />
+      <SurveyInvitation />
     </main>
   );
 }
