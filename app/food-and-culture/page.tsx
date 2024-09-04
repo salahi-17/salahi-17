@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
+import { aclonica } from '@/utils/aclonica';
 
 const ZanzibarCuisinePage = async () => {
   const foodCategories = [
@@ -59,8 +60,7 @@ const heroImageData = await getPlaceholderImage("/food-and-culture/food-and-cult
 
   return (
     <>
-      {/* Hero Section */}
-      <div className="relative h-[600px] mb-12">
+      <div className="relative h-[500px] mb-12">
         <Image
           src="/food-and-culture/food-and-culture-zanzibar.png"
           alt="Zanzibar cuisine"
@@ -70,13 +70,12 @@ const heroImageData = await getPlaceholderImage("/food-and-culture/food-and-cult
           blurDataURL={heroImageData.placeholder}
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
-          <h1 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-bold text-white text-center">
+          <h1 className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl md:text-7xl font-bold text-white text-center drop-shadow-lg ${aclonica.className}`}>
             Zanzibar cuisine
           </h1>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
-        {/* Food Categories */}
         {categoriesWithPlaceholders.map((category, index) => (
           <div key={index} className="mb-12">
             <h2 className="text-3xl font-bold mb-6 text-center">{category.title}</h2>

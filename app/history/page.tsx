@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
+import { aclonica } from '@/utils/aclonica';
 
 const HistoryCulturePage = async () => {
   const timelineEvents = [
@@ -101,7 +102,7 @@ const HistoryCulturePage = async () => {
   return (
     <div>
       {/* Hero Section */}
-      <div className="relative h-[600px] mb-12">
+      <div className="relative h-[500px] mb-12">
         <Image
           src="/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg"
           alt="Zanzibar History"
@@ -111,7 +112,7 @@ const HistoryCulturePage = async () => {
           blurDataURL={heroImageData.placeholder}
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white z-10">
-          <h1 className="text-4xl md:text-7xl font-bold mb-4">History & Culture</h1>
+          <h1 className={`text-4xl md:text-7xl font-bold mb-4 drop-shadow-lg ${aclonica.className}`}>History & Culture</h1>
         </div>
       </div>
 

@@ -64,9 +64,6 @@ export const ExcursionsSection = async () => {
                     <div className="mb-6 text-gray-600">
                       <p className="text-sm md:text-base">{excursion.description}</p>
                     </div>
-                    <Button variant="outline" size="sm" className="self-start mt-2 px-6 py-2 rounded-md border border-white text-white bg-transparent hover:bg-white hover:text-gray-800">
-                      Explore now
-                    </Button>
                   </div>
                 </div>
               </CarouselItem>

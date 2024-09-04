@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPlaceholderImage } from '@/utils/images';
+import { aclonica } from '@/utils/aclonica';
 
 const IslandsPage = async () => {
   const islands = [
@@ -40,8 +41,7 @@ const IslandsPage = async () => {
 
   return (
     <div>
-      {/* Hero Section */}
-      <div className="relative h-[600px] mb-12">
+      <div className="relative h-[500px] mb-12">
         <Image
           src={heroImageData.src}
           alt="Zanzibar Islands"
@@ -51,7 +51,7 @@ const IslandsPage = async () => {
           blurDataURL={heroImageData.placeholder}
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
-          <h1 className="text-4xl md:text-7xl font-bold mb-4">Islands</h1>
+          <h1 className={`text-4xl md:text-7xl font-bold mb-4 drop-shadow-lg ${aclonica.className}`}>Islands</h1>
           <p className="text-center max-w-2xl mb-6">
             Zanzibar is an archipelago consisting of 50 beautiful islands. The two main islands, also the two largest, are Unguja Island and Pemba.
           </p>
@@ -61,7 +61,6 @@ const IslandsPage = async () => {
         </div>
       </div>
 
-      {/* Islands Section */}
       <div className="container mx-auto px-4 py-8">
         {islandsWithPlaceholders.map((island, index) => (
           <Card key={index} className="mb-8 overflow-hidden bg-white">
@@ -81,9 +80,6 @@ const IslandsPage = async () => {
                   <CardContent className="w-full md:w-1/2 p-6 flex flex-col justify-center">
                     <h2 className="text-2xl font-bold mb-4 text-primary">{island.name}</h2>
                     <p className="mb-4">{island.description}</p>
-                    <Button variant="default" className="self-start text-white">
-                      Explore more
-                    </Button>
                   </CardContent>
                 </>
               ) : (
@@ -111,8 +107,6 @@ const IslandsPage = async () => {
           </Card>
         ))}
       </div>
-
-      {/* Bottom Hero Section */}
       <div className="relative h-[400px]">
         <Image
           src={bottomHeroImageData.src}
@@ -122,20 +116,6 @@ const IslandsPage = async () => {
           placeholder="blur"
           blurDataURL={bottomHeroImageData.placeholder}
         />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Islands</h2>
-          <p className="text-center max-w-2xl mb-6">
-            Zanzibar is an archipelago consisting of 50 beautiful islands, the two main islands, also the two largest, are Unguja Island and Pemba
-          </p>
-          <div className="space-x-4">
-            <Button variant="outline" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white hover:bg-transparent">
-              Where to visit
-            </Button>
-            <Button variant="outline" className="self-start rounded-none border-2 text-white border-white bg-transparent hover:text-white hover:bg-transparent">
-              All places
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );

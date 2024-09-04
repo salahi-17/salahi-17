@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FaTiktok, FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import Link from 'next/link';
 import { getPlaceholderImage } from '@/utils/images';
+import { aclonica } from '@/utils/aclonica';
 
 const ContactPage = async () => {
   const galleryImages = [
@@ -28,10 +29,10 @@ const ContactPage = async () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <div className="relative h-[600px] bg-gradient-to-br from-gray-800 to-black mb-12">
+      <div className="relative h-[500px] bg-gradient-to-br from-gray-800 to-black mb-12">
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
           <p className="text-lg md:text-2xl font-bold mb-2 text-primary text-center">DISCOVER ZANZIBAR WITH ZAFIRI</p>
-          <h1 className="text-4xl md:text-7xl font-bold">Contact us</h1>
+          <h1 className={`text-4xl md:text-7xl font-bold ${aclonica.className} drop-shadow-lg`}>Contact us</h1>
         </div>
       </div>
 

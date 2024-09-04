@@ -45,8 +45,6 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
       }))
     };
 
-    console.log('Schedule data being sent:', JSON.stringify(formattedSchedule, null, 2));
-
     try {
       const response = await fetch('/api/create-order', {
         method: 'POST',

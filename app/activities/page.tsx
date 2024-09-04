@@ -54,7 +54,7 @@ const ToursActivitiesPage = async () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="relative h-[600px] mb-12">
+      <div className="relative h-[500px] mb-12">
         <Image
           src="/activities/sight-seeing.jpg"
           alt="Tours and Activities"

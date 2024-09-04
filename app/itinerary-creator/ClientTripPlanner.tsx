@@ -30,8 +30,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 1));
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [tripDays, setTripDays] = useState<number>(1);
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<City | 'All'>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [schedule, setSchedule] = useState<Schedule>({});
   const [cityData, setCityData] = useState<City[]>([]);
   const [planName, setPlanName] = useState<string>("");
@@ -366,6 +366,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="All">All Categories</SelectItem>
               {categories.map(category => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -373,11 +374,19 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               ))}
             </SelectContent>
           </Select>
-          <Select onValueChange={(value: string) => setSelectedCity(cityData.find(city => city.name === value) || null)}>
+          <Select onValueChange={(value: string) => {
+            if (value === 'All') {
+              setSelectedCity('All');
+            } else {
+              const found = cityData.find(city => city.name === value);
+              setSelectedCity(found || 'All');
+            }
+          }}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a city" />
+              <SelectValue placeholder="Select an area" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="All">All Areas</SelectItem>
               {cityData.map(city => (
                 <SelectItem key={city.name} value={city.name}>
                   {city.name}
@@ -389,6 +398,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <ActivitySelector
           selectedCity={selectedCity}
           selectedCategory={selectedCategory}
+          cityData={cityData}
         />
       </div>
     </div>

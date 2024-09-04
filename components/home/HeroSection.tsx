@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { getPlaceholderImage } from '@/utils/images';
 import Link from 'next/link';
+import { aclonica } from '@/utils/aclonica';
 
 export const HeroSection = async () => {
   const imageWithPlaceholder = await getPlaceholderImage("/home/humphrey-muleba-e6dRLBx6Kg8-unsplash-scaled.jpeg");
@@ -20,7 +21,7 @@ export const HeroSection = async () => {
       />
       <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
         <div className="text-center max-w-3xl mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
+          <h1 className={`text-4xl md:text-5xl font-bold text-white mb-8 leading-tight drop-shadow-lg ${aclonica.className}`}>
             Welcome to Zafiri
           </h1>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">

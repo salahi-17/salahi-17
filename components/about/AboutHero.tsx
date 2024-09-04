@@ -1,12 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
+import { aclonica } from '@/utils/aclonica';
 
 export async function AboutHero() {
     const imageWithPlaceholder = await getPlaceholderImage("/about-us-zafiri-hero.jpg");
 
     return (
-        <section className="relative h-[600px] w-full overflow-hidden">
+        <section className="relative h-[500px] w-full overflow-hidden">
             <Image
                 src={imageWithPlaceholder.src}
                 alt="Beautiful Zanzibar beach"
@@ -18,7 +19,7 @@ export async function AboutHero() {
                 priority
             />
             <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
-                <h1 className="text-4xl md:text-7xl font-bold text-white text-center">
+                <h1 className={`text-4xl md:text-7xl font-bold text-white text-center drop-shadow-lg ${aclonica.className}`}>
                     About us
                 </h1>
             </div>

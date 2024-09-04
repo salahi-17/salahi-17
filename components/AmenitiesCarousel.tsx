@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Carousel,
   CarouselContent,
@@ -14,9 +17,13 @@ interface Amenity {
 
 interface AmenitiesCarouselProps {
   amenities: Amenity[];
+  onAmenityClick: (amenity: string) => void;
 }
 
-export const AmenitiesCarousel: React.FC<AmenitiesCarouselProps> = ({ amenities }) => {
+export const AmenitiesCarousel: React.FC<AmenitiesCarouselProps> = ({ amenities, onAmenityClick }) => {
+  const searchParams = useSearchParams();
+  const selectedAmenity = searchParams.get('amenity');
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
@@ -25,7 +32,12 @@ export const AmenitiesCarousel: React.FC<AmenitiesCarouselProps> = ({ amenities 
           <CarouselContent>
             {amenities.map((amenity, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4">
-                <div className="relative h-72 rounded-lg overflow-hidden group">
+                <div 
+                  className={`relative h-72 rounded-lg overflow-hidden group cursor-pointer ${
+                    selectedAmenity === amenity.name ? 'ring-4 ring-[#00e1e3]' : ''
+                  }`}
+                  onClick={() => onAmenityClick(amenity.name)}
+                >
                   <img 
                     src={amenity.image} 
                     alt={amenity.name} 
@@ -38,7 +50,7 @@ export const AmenitiesCarousel: React.FC<AmenitiesCarouselProps> = ({ amenities 
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious  className='hidden md:flex'/>
+          <CarouselPrevious className='hidden md:flex'/>
           <CarouselNext className='hidden md:flex'/>
         </Carousel>
       </div>

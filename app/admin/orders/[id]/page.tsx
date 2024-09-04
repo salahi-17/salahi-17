@@ -53,7 +53,6 @@ export default async function AdminOrderDetailsPage({ params }: { params: { id: 
   }
 
   if (!order) {
-    console.log(`Order not found for ID: ${params.id}`);
     notFound();
   }
 

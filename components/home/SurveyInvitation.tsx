@@ -1,36 +1,35 @@
 "use client";
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ClipboardList } from 'lucide-react';
+import { Sparkles } from "lucide-react";
 
 const SurveyInvitation = () => {
-  const handleSurveyClick = () => {
+  const handleTakeSurvey = () => {
     window.open('https://us22.list-manage.com/survey?u=d94960f37fe023354269eaf8d&id=63ec0943c6&attribution=false', '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto my-8">
+    <Card className="w-full max-w-2xl mx-auto my-8 bg-gradient-to-br from-primary/10 to-pink-100 border-2 border-primary">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <ClipboardList className="h-6 w-6" />
-          <span>We Value Your Feedback!</span>
+        <CardTitle className="text-2xl font-bold text-primary flex items-center">
+          <Sparkles className="mr-2 text-yellow-500" />
+          Help Us Improve!
         </CardTitle>
-        <CardDescription>
-          Help us improve your experience by taking our quick survey
-        </CardDescription>
+        <p className="text-lg text-gray-700">
+          We value your opinion! Take our quick survey and help shape the future of our website.
+        </p>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground">
-          Your opinion matters to us! By participating in our survey, you'll help shape the future of our services. It only takes a few minutes, and your insights are invaluable.
-        </p>
+        <div className="p-4 bg-white bg-opacity-50 rounded-lg">
+          <p className="text-sm text-gray-600">
+            Your feedback is crucial in making our website better for everyone. It will only take a few minutes!
+          </p>
+        </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          className="w-full"
-          onClick={handleSurveyClick}
-        >
+      <CardFooter className="flex justify-end space-x-2">
+        <Button onClick={handleTakeSurvey} className="bg-primary text-white hover:bg-primary/90">
           Take the Survey
         </Button>
       </CardFooter>
