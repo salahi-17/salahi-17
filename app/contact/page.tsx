@@ -11,9 +11,9 @@ import { aclonica } from '@/utils/aclonica';
 
 const ContactPage = async () => {
   const galleryImages = [
-    "/contact/0-3e4e4a76-10fb-4c05-b998-56c7a80db400-800x800.webp",
-    "/contact/0-5ce404db-ade4-4474-b4a0-ba38d8481e0b-800x800.jpg",
-    "/contact/0-327a226c-fb7f-41da-aec6-1d427661c42e-800x800.jpg",
+    "/home/zanzibar-attractions.webp",
+    "/islands/Prison-Island.webp",
+    "/hotels/Babalao-Bungalos.webp",
     "/contact/0-0775daac-b81d-4689-8fc0-52f4e3d95aec-800x800.webp"
   ];
 

@@ -38,6 +38,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
+
+
   const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -53,11 +55,23 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
 
   useEffect(() => {
     const id = searchParams.get('id');
+    const category = searchParams.get('category');
+    const area = searchParams.get('area');
+
     if (id) {
       setItineraryId(id);
       fetchItinerary(id);
     }
-  }, [searchParams]);
+    
+    if (category) {
+      setSelectedCategory(category);
+    }
+
+    if (area && cityData.length > 0) {
+      const foundCity = cityData.find(city => city.name.toLowerCase() === area.toLowerCase());
+      setSelectedCity(foundCity || 'All');
+    }
+  }, [searchParams, cityData]);
 
   useEffect(() => {
     // Calculate total price whenever the schedule changes

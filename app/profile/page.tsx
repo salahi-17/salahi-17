@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileTabs from "./ProfileTabs";
+import LogoutButton from "./LogoutButton";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -36,8 +37,11 @@ export default async function ProfilePage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Profile</h1>
-      <p className="pb-10">Welcome, {session.user.name || session.user.email}</p>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Your Profile</h1>
+        <LogoutButton />
+      </div>
+      <p className="mb-8">Welcome, {session.user.name || session.user.email}</p>
       <ProfileTabs initialItineraries={transformedItineraries} />
     </div>
   );

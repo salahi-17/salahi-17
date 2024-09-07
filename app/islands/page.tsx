@@ -107,16 +107,6 @@ const IslandsPage = async () => {
           </Card>
         ))}
       </div>
-      <div className="relative h-[400px]">
-        <Image
-          src={bottomHeroImageData.src}
-          alt="Zanzibar Islands"
-          layout="fill"
-          objectFit="cover"
-          placeholder="blur"
-          blurDataURL={bottomHeroImageData.placeholder}
-        />
-      </div>
     </div>
   );
 };
