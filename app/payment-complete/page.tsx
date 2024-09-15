@@ -20,7 +20,7 @@ export default function PaymentCompletePage() {
   }, [itineraryId]);
 
   const handleViewOrder = () => {
-    router.push('/my-orders');
+    router.push('/profile');
   };
 
   return (

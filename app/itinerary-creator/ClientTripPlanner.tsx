@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -38,15 +39,13 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
-
-
   const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
 
   const searchParams = useSearchParams();
 
-  const getTimeSlotForOrder = (order: number): 'Morning' | 'Afternoon' | 'Evening' | 'Night' => {
+  const getTimeSlotForOrder = (order: number): TimeSlot => {
     if (order < 10) return 'Morning';
     if (order < 20) return 'Afternoon';
     if (order < 30) return 'Evening';
@@ -61,8 +60,20 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     if (id) {
       setItineraryId(id);
       fetchItinerary(id);
+    } else {
+      // Load from local storage if no ID is provided
+      const savedItinerary = localStorage.getItem('unsavedItinerary');
+      if (savedItinerary) {
+        const parsedItinerary = JSON.parse(savedItinerary);
+        setPlanName(parsedItinerary.planName);
+        setStartDate(new Date(parsedItinerary.startDate));
+        setEndDate(new Date(parsedItinerary.endDate));
+        setTripDays(parsedItinerary.tripDays);
+        setSchedule(parsedItinerary.schedule);
+        setSelectedDate(new Date(parsedItinerary.selectedDate));
+      }
     }
-    
+
     if (category) {
       setSelectedCategory(category);
     }
@@ -84,7 +95,24 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     });
     setTotalPrice(price);
+
+    
   }, [schedule]);
+
+  useEffect(() => {
+    const groupedData = initialCityData.reduce((acc, activity) => {
+      if (!acc[activity.location]) {
+        acc[activity.location] = { name: activity.location, categories: {} };
+      }
+      if (!acc[activity.location].categories[activity.category]) {
+        acc[activity.location].categories[activity.category] = [];
+      }
+      acc[activity.location].categories[activity.category].push(activity);
+      return acc;
+    }, {} as Record<string, City>);
+
+    setCityData(Object.values(groupedData));
+  }, [initialCityData]);
 
   const fetchItinerary = async (id: string) => {
     try {
@@ -134,6 +162,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       setSchedule(newSchedule);
       setSelectedDate(new Date(itinerary.startDate));
 
+      // Remove from local storage as we've loaded a saved itinerary
+      localStorage.removeItem('unsavedItinerary');
     } catch (error) {
       console.error('Error fetching itinerary:', error);
       toast({
@@ -144,34 +174,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     }
   };
-
-
-
-  useEffect(() => {
-    const groupedData = initialCityData.reduce((acc, activity) => {
-      if (!acc[activity.location]) {
-        acc[activity.location] = { name: activity.location, categories: {} };
-      }
-      if (!acc[activity.location].categories[activity.category]) {
-        acc[activity.location].categories[activity.category] = [];
-      }
-      acc[activity.location].categories[activity.category].push(activity);
-      return acc;
-    }, {} as Record<string, City>);
-
-    setCityData(Object.values(groupedData));
-  }, [initialCityData]);
-
-  useEffect(() => {
-    const draft = {
-      planName,
-      startDate,
-      selectedDate,
-      tripDays,
-      schedule,
-    };
-    localStorage.setItem('itineraryDraft', JSON.stringify(draft));
-  }, [planName, startDate, selectedDate, tripDays, schedule]);
 
   const handleSavePlan = async () => {
     if (!session) {
@@ -190,7 +192,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         items: Object.entries(daySchedule).flatMap(([timeSlot, activities]) =>
           activities.map((activity, index) => ({
             activityId: activity.id,
-            order: getOrderForTimeSlot(timeSlot) + index,
+            order: getOrderForTimeSlot(timeSlot as TimeSlot) + index,
             notes: activity.notes || null
           }))
         )
@@ -218,7 +220,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           description: `Itinerary ${itineraryId ? 'updated' : 'saved'} successfully`,
           duration: 3000,
         });
-        localStorage.removeItem('itineraryDraft');
+        // Remove from local storage after successful save
+        localStorage.removeItem('unsavedItinerary');
         router.push('/profile');
       } else {
         throw new Error(`Failed to ${itineraryId ? 'update' : 'save'} plan`);
@@ -230,16 +233,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         duration: 3000,
         variant: "destructive",
       });
-    }
-  };
-
-  const getOrderForTimeSlot = (timeSlot: string): number => {
-    switch (timeSlot) {
-      case 'Morning': return 0;
-      case 'Afternoon': return 10;
-      case 'Evening': return 20;
-      case 'Night': return 30;
-      default: return 0;
     }
   };
 
@@ -299,11 +292,27 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
 
   const updateSchedule = (newSchedule: Schedule) => {
     setSchedule(newSchedule);
+    if (!itineraryId) {
+      const itineraryToSave = {
+        planName,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        selectedDate: selectedDate.toISOString(),
+        tripDays,
+        schedule: newSchedule,
+      };
+      localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
+    }
   };
 
-  const isItemScheduled = (item: ScheduleItem, timeSlot: string): boolean => {
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    return schedule[dateKey]?.[timeSlot]?.some(scheduledItem => scheduledItem.name === item.name) || false;
+  const getOrderForTimeSlot = (timeSlot: TimeSlot): number => {
+    switch (timeSlot) {
+      case 'Morning': return 0;
+      case 'Afternoon': return 10;
+      case 'Evening': return 20;
+      case 'Night': return 30;
+      default: return 0;
+    }
   };
 
   return (
@@ -374,20 +383,19 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         updateSchedule={updateSchedule}
       />
       <div className="flex-1 p-6 overflow-auto bg-white shadow-md m-6 rounded-lg">
-        <div className="mb-6 flex space-x-4">
-          <Select onValueChange={(value: string) => setSelectedCategory(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Categories</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="mb-6 flex space-x-4"><Select onValueChange={(value: string) => setSelectedCategory(value)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All Categories</SelectItem>
+            {categories.map(category => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
           <Select onValueChange={(value: string) => {
             if (value === 'All') {
               setSelectedCity('All');
