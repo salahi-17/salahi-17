@@ -16,6 +16,7 @@ export interface ScheduleItem extends Activity {
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+  guestCount: number;
 }
 
 export interface City {

@@ -17,7 +17,7 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, timeSlot: string) => {
     e.preventDefault();
     try {
-      const item = JSON.parse(e.dataTransfer.getData("application/json")) as ScheduleItem;
+      const item = JSON.parse(e.dataTransfer.getData("application/json")) as ScheduleItem & { guestCount: number, totalPrice: number };
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
       const existingItems = schedule[dateKey]?.[timeSlot] || [];
       if (!existingItems.some(existingItem => existingItem.name === item.name)) {
@@ -25,7 +25,11 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
           ...schedule,
           [dateKey]: {
             ...schedule[dateKey],
-            [timeSlot]: [...existingItems, item]
+            [timeSlot]: [...existingItems, {
+              ...item,
+              price: item.totalPrice, // Use the total price that includes guest count
+              guestCount: item.guestCount
+            }]
           }
         });
       }
@@ -46,40 +50,46 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
   };
 
   return (
-    <aside className="bg-white px-4 py-6 flex flex-col gap-6 w-96">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Day {differenceInDays(selectedDate, startDate) + 1}</h1>
-      </div>
-      <ScrollArea className="h-[calc(100vh-100px)]">
-        <div className="grid gap-4">
-          {timeSlots.map((timeSlot) => (
-            <div key={timeSlot} className="flex flex-col gap-2">
-              <span className="font-semibold">{timeSlot}</span>
-              <div
-                className="border-2 border-dashed border-gray-300 p-2 rounded-md min-h-[120px]"
-                onDrop={(e) => handleDrop(e, timeSlot)}
-                onDragOver={handleDragOver}
-              >
-                {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
-                  schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
-                    <div key={index} className="relative mb-2 rounded overflow-hidden">
-                      <img src={item.image} alt={item.name} className="w-full h-24 object-cover" />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-between p-2">
-                        <span className="text-white text-shadow">{item.name}</span>
-                        <Button variant="ghost" size="icon" onClick={() => removeScheduleItem(timeSlot, index)}>
-                          <TrashIcon className="h-4 w-4 text-white" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-gray-400">Drag and drop items here</div>
-                )}
-              </div>
-            </div>
-          ))}
+      <aside className="bg-white px-4 py-6 flex flex-col gap-6 w-96">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Day {differenceInDays(selectedDate, startDate) + 1}</h1>
         </div>
-      </ScrollArea>
-    </aside>
-  );
-}
+        <ScrollArea className="h-[calc(100vh-100px)]">
+          <div className="grid gap-4">
+            {timeSlots.map((timeSlot) => (
+              <div key={timeSlot} className="flex flex-col gap-2">
+                <span className="font-semibold">{timeSlot}</span>
+                <div
+                  className="border-2 border-dashed border-gray-300 p-2 rounded-md min-h-[120px]"
+                  onDrop={(e) => handleDrop(e, timeSlot)}
+                  onDragOver={handleDragOver}
+                >
+                  {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
+                    schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
+                      <div key={index} className="relative mb-2 rounded overflow-hidden">
+                        <img src={item.image} alt={item.name} className="w-full h-24 object-cover" />
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-2">
+                          <div className="flex justify-between items-start">
+                            <span className="text-white text-shadow">{item.name}</span>
+                            <Button variant="ghost" size="icon" onClick={() => removeScheduleItem(timeSlot, index)}>
+                              <TrashIcon className="h-4 w-4 text-white" />
+                            </Button>
+                          </div>
+                          <div className="text-white text-sm">
+                            <p>Guests: {item.guestCount}</p>
+                            <p>Total: ${item.price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-400">Drag and drop items here</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </aside>
+    );
+  }

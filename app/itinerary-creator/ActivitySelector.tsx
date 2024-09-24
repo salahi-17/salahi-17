@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, City } from './types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ActivitySelectorProps {
   selectedCity: City | 'All';
@@ -10,11 +11,21 @@ interface ActivitySelectorProps {
 
 export default function ActivitySelector({ selectedCity, selectedCategory, cityData }: ActivitySelectorProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [guestCount, setGuestCount] = useState<number>(1);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: Activity, category: string) => {
-    e.dataTransfer.setData("application/json", JSON.stringify({ ...item, type: category }));
-    if (e.currentTarget.classList.contains('activity-card')) {
-      e.currentTarget.classList.add('dragging');
+    if (item.price > 0) {
+      e.dataTransfer.setData("application/json", JSON.stringify({
+        ...item,
+        type: category,
+        guestCount,
+        totalPrice: item.price * guestCount
+      }));
+      if (e.currentTarget.classList.contains('activity-card')) {
+        e.currentTarget.classList.add('dragging');
+      }
+    } else {
+      e.preventDefault();
     }
   };
 
@@ -23,6 +34,7 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
       e.currentTarget.classList.remove('dragging');
     }
   };
+
 
   const getActivities = () => {
     let allActivities: { activity: Activity; category: string }[] = [];
@@ -64,8 +76,8 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
           <Dialog key={index}>
             <DialogTrigger asChild>
               <div
-                className="activity-card bg-white shadow-lg rounded-lg overflow-hidden cursor-move hover:shadow-xl transition-shadow"
-                draggable
+                className={`activity-card bg-white shadow-lg rounded-lg overflow-hidden ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'} hover:shadow-xl transition-shadow`}
+                draggable={item.price > 0}
                 onDragStart={(e) => handleDragStart(e, item, category)}
                 onDragEnd={handleDragEnd}
                 onClick={() => setSelectedActivity(item)}
@@ -74,6 +86,7 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
                 <div className="p-4">
                   <h4 className="font-semibold text-xl mb-2">{item.name}</h4>
                   <p className="text-sm text-gray-600">{category}</p>
+                  <p className="text-sm font-bold">${item.price.toFixed(2)}</p>
                 </div>
               </div>
             </DialogTrigger>
@@ -85,9 +98,31 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
                 <img src={item.image} alt={item.name} className="w-full h-64 object-cover rounded mb-2" />
                 <p className="font-semibold">{item.description}</p>
                 <p className="font-semibold">Location: {item.location}</p>
-                <p className="font-semibold">Price: ${item.price.toFixed(2)}</p>
+                {
+                  item.price > 0 &&
+                  <>
+                  <p className="font-semibold">Base Price: ${item.price.toFixed(2)}</p>
+                    <div className="flex items-center gap-4">
+                      <label htmlFor="guestCount" className="font-semibold">Number of Guests:</label>
+                      <Select onValueChange={(value) => setGuestCount(Number(value))}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select guests" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="font-semibold">Total Price: ${(item.price * guestCount).toFixed(2)}</p>
+                  </>
+                }
                 <p className="font-semibold">Amenities: {item.amenities.join(', ')}</p>
                 <p className="font-semibold">Category: {category}</p>
+                {item.price === 0 && (
+                  <p className="text-red-500">This activity cannot be added to the itinerary.</p>
+                )}
               </div>
             </DialogContent>
           </Dialog>

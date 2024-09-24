@@ -146,7 +146,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             image: item.activity.image,
             createdAt: item.activity.createdAt,
             updatedAt: item.activity.updatedAt,
-            type: item.activity.category
+            type: item.activity.category,
+            guestCount: 1
           };
 
           const timeSlot = getTimeSlotForOrder(item.order);
