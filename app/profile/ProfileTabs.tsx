@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import SavedItineraries from "./SavedItineraries";
-import PendingOrders from "@/components/PendingOrders";
 import MyOrders from "@/components/MyOrders";
 
 interface TabButtonProps {
@@ -43,16 +42,12 @@ export default function ProfileTabs({ initialItineraries }: ProfileTabsProps) {
         <TabButton active={activeTab === "saved"} onClick={() => setActiveTab("saved")}>
           Saved Itineraries
         </TabButton>
-        <TabButton active={activeTab === "pending"} onClick={() => setActiveTab("pending")}>
-          Pending Orders
-        </TabButton>
         <TabButton active={activeTab === "orders"} onClick={() => setActiveTab("orders")}>
           My Orders
         </TabButton>
       </div>
 
       {activeTab === "saved" && <SavedItineraries initialItineraries={initialItineraries} />}
-      {activeTab === "pending" && <PendingOrders />}
       {activeTab === "orders" && <MyOrders />}
     </div>
   );

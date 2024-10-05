@@ -24,13 +24,16 @@ interface ClientTripPlannerProps {
   userId?: string;
 }
 
-type TimeSlot = 'Morning' | 'Afternoon' | 'Evening' | 'Night';
+type TimeSlot = 'Accommodation' | 'Morning' | 'Afternoon' | 'Evening' | 'Night';
 
 export default function ClientTripPlanner({ initialCityData, categories }: ClientTripPlannerProps) {
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 1));
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [tripDays, setTripDays] = useState<number>(1);
+  const today = new Date();
+  const tomorrow = addDays(today, 1);
+
+  const [startDate, setStartDate] = useState<Date>(today);
+  const [endDate, setEndDate] = useState<Date>(tomorrow);
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [tripDays, setTripDays] = useState<number>(2);
   const [selectedCity, setSelectedCity] = useState<City | 'All'>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [schedule, setSchedule] = useState<Schedule>({});
@@ -46,6 +49,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const searchParams = useSearchParams();
 
   const getTimeSlotForOrder = (order: number): TimeSlot => {
+    if (order < 0) return 'Accommodation';
     if (order < 10) return 'Morning';
     if (order < 20) return 'Afternoon';
     if (order < 30) return 'Evening';
@@ -71,6 +75,9 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         setTripDays(parsedItinerary.tripDays);
         setSchedule(parsedItinerary.schedule);
         setSelectedDate(new Date(parsedItinerary.selectedDate));
+      } else {
+        // Initialize schedule with default dates
+        initializeSchedule(today, tomorrow);
       }
     }
 
@@ -82,7 +89,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       const foundCity = cityData.find(city => city.name.toLowerCase() === area.toLowerCase());
       setSelectedCity(foundCity || 'All');
     }
-  }, [searchParams, cityData]);
+  }, [searchParams, cityData])
 
   useEffect(() => {
     // Calculate total price whenever the schedule changes
@@ -96,7 +103,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     });
     setTotalPrice(price);
 
-    
+
   }, [schedule]);
 
   useEffect(() => {
@@ -128,6 +135,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       itinerary.days.forEach((day: any) => {
         const dateKey = format(new Date(day.date), 'yyyy-MM-dd');
         newSchedule[dateKey] = {
+          Accommodation: [],
           Morning: [],
           Afternoon: [],
           Evening: [],
@@ -151,7 +159,18 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           };
 
           const timeSlot = getTimeSlotForOrder(item.order);
-          newSchedule[dateKey][timeSlot].push(activity);
+
+          // Check if the activity is a hotel
+          if (activity.category.toLowerCase() === 'hotel') {
+            newSchedule[dateKey].Accommodation = [activity];
+          } else {
+            // Ensure the time slot exists before pushing
+            if (newSchedule[dateKey][timeSlot]) {
+              newSchedule[dateKey][timeSlot].push(activity);
+            } else {
+              console.warn(`Unexpected time slot: ${timeSlot}`);
+            }
+          }
         });
       });
 
@@ -175,6 +194,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       });
     }
   };
+
+
 
   const handleSavePlan = async () => {
     if (!session) {
@@ -221,7 +242,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           description: `Itinerary ${itineraryId ? 'updated' : 'saved'} successfully`,
           duration: 3000,
         });
-        // Remove from local storage after successful save
         localStorage.removeItem('unsavedItinerary');
         router.push('/profile');
       } else {
@@ -237,20 +257,42 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }
   };
 
+  const initializeSchedule = (start: Date, end: Date) => {
+    const days = differenceInDays(end, start) + 1;
+    const newSchedule: Schedule = {};
+    for (let i = 0; i < days; i++) {
+      const currentDate = addDays(start, i);
+      newSchedule[format(currentDate, 'yyyy-MM-dd')] = {
+        Accommodation: [],
+        Morning: [],
+        Afternoon: [],
+        Evening: [],
+        Night: []
+      };
+    }
+    setSchedule(newSchedule);
+  };
+
   const handleStartDateSelect = (date: Date | undefined) => {
     if (date) {
-      const daysDifference = differenceInDays(date, startDate);
       setStartDate(date);
-      setEndDate(addDays(date, tripDays - 1));
       setSelectedDate(date);
+      if (endDate <= date) {
+        const newEndDate = addDays(date, 1);
+        setEndDate(newEndDate);
+        initializeSchedule(date, newEndDate);
+      } else {
+        initializeSchedule(date, endDate);
+      }
+    }
+  };
 
-      const newSchedule: Schedule = {};
-      Object.entries(schedule).forEach(([dateKey, daySchedule]) => {
-        const oldDate = parse(dateKey, 'yyyy-MM-dd', new Date());
-        const newDate = addDays(oldDate, daysDifference);
-        newSchedule[format(newDate, 'yyyy-MM-dd')] = daySchedule;
-      });
-      setSchedule(newSchedule);
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (date && date > startDate) {
+      setEndDate(date);
+      const days = differenceInDays(date, startDate) + 1;
+      setTripDays(days);
+      initializeSchedule(startDate, date);
     }
   };
 
@@ -306,20 +348,21 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }
   };
 
+  // Make sure this function is defined in your component
   const getOrderForTimeSlot = (timeSlot: TimeSlot): number => {
     switch (timeSlot) {
+      case 'Accommodation': return -1;
       case 'Morning': return 0;
       case 'Afternoon': return 10;
       case 'Evening': return 20;
       case 'Night': return 30;
-      default: return 0;
     }
   };
 
   return (
     <div className="flex h-screen w-full bg-gray-100">
       <aside className="bg-white px-4 py-6 flex flex-col gap-6 w-52">
-        <div className="flex flex-col items-center justify-between">
+        <div className="flex flex-col items-center justify-between gap-4">
           <h2 className="text-sm font-semibold">Trip Start Date</h2>
           <Popover>
             <PopoverTrigger asChild>
@@ -334,6 +377,25 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                 selected={startDate}
                 onSelect={handleStartDateSelect}
                 initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          <h2 className="text-sm font-semibold">Trip End Date</h2>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(endDate, 'PPP')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={handleEndDateSelect}
+                initialFocus
+                disabled={(date) => date <= startDate}
               />
             </PopoverContent>
           </Popover>
