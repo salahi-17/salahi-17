@@ -10,14 +10,37 @@ export default function PaymentCompletePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itineraryId = searchParams.get('itineraryId');
+  const orderId = searchParams.get('orderId');
 
   useEffect(() => {
-    if (itineraryId) {
-      setStatus('success');
-    } else {
-      setStatus('error');
-    }
-  }, [itineraryId]);
+    const confirmPayment = async () => {
+      if (!itineraryId || !orderId) {
+        setStatus('error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/confirm-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ itineraryId, orderId }),
+        });
+
+        if (response.ok) {
+          setStatus('success');
+        } else {
+          setStatus('error');
+        }
+      } catch (error) {
+        console.error('Error confirming payment:', error);
+        setStatus('error');
+      }
+    };
+
+    confirmPayment();
+  }, [itineraryId, orderId]);
 
   const handleViewOrder = () => {
     router.push('/profile');

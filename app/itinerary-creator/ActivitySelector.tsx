@@ -19,7 +19,8 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
         ...item,
         type: category,
         guestCount,
-        totalPrice: item.price * guestCount
+        totalPrice: item.price * guestCount,
+        isHotel: category.toLowerCase() === 'hotel'
       }));
       if (e.currentTarget.classList.contains('activity-card')) {
         e.currentTarget.classList.add('dragging');
@@ -34,7 +35,6 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
       e.currentTarget.classList.remove('dragging');
     }
   };
-
 
   const getActivities = () => {
     let allActivities: { activity: Activity; category: string }[] = [];
@@ -86,7 +86,7 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
                 <div className="p-4">
                   <h4 className="font-semibold text-xl mb-2">{item.name}</h4>
                   <p className="text-sm text-gray-600">{category}</p>
-                  <p className="text-sm font-bold">${item.price.toFixed(2)}</p>
+                  {item.price > 0 && <p className="text-sm font-bold">${item.price.toFixed(2)}</p>}
                 </div>
               </div>
             </DialogTrigger>
@@ -98,10 +98,9 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
                 <img src={item.image} alt={item.name} className="w-full h-64 object-cover rounded mb-2" />
                 <p className="font-semibold">{item.description}</p>
                 <p className="font-semibold">Location: {item.location}</p>
-                {
-                  item.price > 0 &&
+                {item.price > 0 && (
                   <>
-                  <p className="font-semibold">Base Price: ${item.price.toFixed(2)}</p>
+                    <p className="font-semibold">Base Price: ${item.price.toFixed(2)}</p>
                     <div className="flex items-center gap-4">
                       <label htmlFor="guestCount" className="font-semibold">Number of Guests:</label>
                       <Select onValueChange={(value) => setGuestCount(Number(value))}>
@@ -117,7 +116,7 @@ export default function ActivitySelector({ selectedCity, selectedCategory, cityD
                     </div>
                     <p className="font-semibold">Total Price: ${(item.price * guestCount).toFixed(2)}</p>
                   </>
-                }
+                )}
                 <p className="font-semibold">Amenities: {item.amenities.join(', ')}</p>
                 <p className="font-semibold">Category: {category}</p>
                 {item.price === 0 && (

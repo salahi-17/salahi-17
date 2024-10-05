@@ -56,7 +56,8 @@ export async function POST(req: Request) {
             body: JSON.stringify({
                 amount: amount,
                 currency: currency,
-                redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-complete?itineraryId=${itinerary.id}`,
+                // redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-complete?itineraryId=${itinerary.id}`,
+                redirect_url: `https://zaidejaz.com`,
                 customer: {
                     email: user.email,
                 },
@@ -65,9 +66,9 @@ export async function POST(req: Request) {
                 metadata: {
                     itineraryId: itinerary.id,
                 },
-                merchant_order_data: {
-                    url: `${process.env.NEXT_PUBLIC_BASE_URL}/profile/my-orders`,
-                },
+                // merchant_order_data: {
+                //     url: `${process.env.NEXT_PUBLIC_BASE_URL}/profile/my-orders`,
+                // },
             }),
         });
 

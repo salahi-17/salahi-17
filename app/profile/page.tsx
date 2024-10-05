@@ -9,31 +9,25 @@ import LogoutButton from "./LogoutButton";
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
-    redirect("/auth/signin");
+  if (!session || !session.user || !session.user.email) {
+    redirect("/api/auth/signin");
   }
 
-  const itineraries = await prisma.itinerary.findMany({
-    where: {
-      userId: session.user.id,
-    },
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) {
+    return <div>User not found.</div>;
+  }
+
+  const initialItineraries = await prisma.itinerary.findMany({
+    where: { userId: user.id },
     select: {
       id: true,
       name: true,
       startDate: true,
       endDate: true,
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: { createdAt: 'desc' },
   });
-
-  // Transform dates to Date objects
-  const transformedItineraries = itineraries.map(itinerary => ({
-    ...itinerary,
-    startDate: new Date(itinerary.startDate),
-    endDate: new Date(itinerary.endDate),
-  }));
 
   return (
     <div className="container mx-auto p-4">
@@ -42,7 +36,7 @@ export default async function ProfilePage() {
         <LogoutButton />
       </div>
       <p className="mb-8">Welcome, {session.user.name || session.user.email}</p>
-      <ProfileTabs initialItineraries={transformedItineraries} />
+      <ProfileTabs initialItineraries={initialItineraries} />
     </div>
   );
 }
