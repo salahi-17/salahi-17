@@ -1,6 +1,7 @@
 // components/MyOrders.tsx
 "use client";
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 interface Order {
@@ -46,7 +47,6 @@ export default function MyOrders() {
           {orders.map((order) => (
             <li key={order.id} className="border p-4 rounded-lg shadow">
               <h3 className="text-xl font-semibold mb-2">{order.planName}</h3>
-              <p>Order ID: {order.id}</p>
               <p>Amount: {order.currency} {(order.amount / 100).toFixed(2)}</p>
               <p>Status: {order.status}</p>
               <p>Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
