@@ -4,7 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const REVOLUT_API_URL = "https://sandbox-merchant.revolut.com/api/orders";
+const REVOLUT_API_URL =  process.env.NODE_ENV === 'production' ? 'https://merchant.revolut.com/api/orders' : 'https://sandbox-merchant.revolut.com/api/orders';
+
 
 async function getRevolutOrderStatus(revolutOrderId: string) {
   try {
