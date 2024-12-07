@@ -30,6 +30,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const today = new Date();
   const tomorrow = addDays(today, 1);
 
+  const [currentTab, setCurrentTab] = useState<'hotels' | 'activities'>('hotels');
   const [startDate, setStartDate] = useState<Date>(today);
   const [endDate, setEndDate] = useState<Date>(tomorrow);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
@@ -446,43 +447,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         updateSchedule={updateSchedule}
       />
       <div className="flex-1 p-6 overflow-auto bg-white shadow-md m-6 rounded-lg">
-        <div className="mb-6 flex space-x-4"><Select onValueChange={(value: string) => setSelectedCategory(value)}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Categories</SelectItem>
-            {categories.map(category => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-          <Select onValueChange={(value: string) => {
-            if (value === 'All') {
-              setSelectedCity('All');
-            } else {
-              const found = cityData.find(city => city.name === value);
-              setSelectedCity(found || 'All');
-            }
-          }}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select an area" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Areas</SelectItem>
-              {cityData.map(city => (
-                <SelectItem key={city.name} value={city.name}>
-                  {city.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
         <ActivitySelector
-          selectedCity={selectedCity}
-          selectedCategory={selectedCategory}
           cityData={cityData}
         />
       </div>
