@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { format, addDays, differenceInDays, parse } from "date-fns";
-import { CalendarIcon, PlusIcon } from "@radix-ui/react-icons";
+import { format, addDays, differenceInDays, parse, eachDayOfInterval } from "date-fns";
+import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -78,7 +78,13 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         setSelectedDate(new Date(parsedItinerary.selectedDate));
       } else {
         // Initialize schedule with default dates
-        initializeSchedule(today, tomorrow);
+        const initialStartDate = today;
+        const initialEndDate = today;
+        setStartDate(initialStartDate);
+        setEndDate(initialEndDate);
+        setSelectedDate(initialStartDate);
+        setTripDays(1);
+        initializeSchedule(initialStartDate, initialEndDate);
       }
     }
 
@@ -261,9 +267,12 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const initializeSchedule = (start: Date, end: Date) => {
     const days = differenceInDays(end, start) + 1;
     const newSchedule: Schedule = {};
+
+    // Create schedule entries for each day in the range
     for (let i = 0; i < days; i++) {
       const currentDate = addDays(start, i);
-      newSchedule[format(currentDate, 'yyyy-MM-dd')] = {
+      const dateKey = format(currentDate, 'yyyy-MM-dd');
+      newSchedule[dateKey] = {
         Accommodation: [],
         Morning: [],
         Afternoon: [],
@@ -271,6 +280,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         Night: []
       };
     }
+
     setSchedule(newSchedule);
   };
 
@@ -278,18 +288,16 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     if (date) {
       setStartDate(date);
       setSelectedDate(date);
-      if (endDate <= date) {
-        const newEndDate = addDays(date, 1);
-        setEndDate(newEndDate);
-        initializeSchedule(date, newEndDate);
-      } else {
-        initializeSchedule(date, endDate);
-      }
+      const newEndDate = endDate < date ? date : endDate;
+      setEndDate(newEndDate);
+      const days = differenceInDays(newEndDate, date) + 1;
+      setTripDays(days);
+      initializeSchedule(date, newEndDate);
     }
   };
 
   const handleEndDateSelect = (date: Date | undefined) => {
-    if (date && date > startDate) {
+    if (date && date >= startDate) {
       setEndDate(date);
       const days = differenceInDays(date, startDate) + 1;
       setTripDays(days);
@@ -304,6 +312,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       return newTripDays;
     });
   };
+
 
   const removeDay = (dayToRemove: number) => {
     if (tripDays > 1) {
@@ -360,96 +369,226 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }
   };
 
-  return (
-    <div className="flex h-screen w-full bg-gray-100">
-      <aside className="bg-white px-4 py-6 flex flex-col gap-6 w-52">
-        <div className="flex flex-col items-center justify-between gap-4">
-          <h2 className="text-sm font-semibold">Trip Start Date</h2>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(startDate, 'PPP')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={handleStartDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+  const handleHotelDateChange = (hotelId: string, startDate: Date, endDate: Date) => {
+    // Update the schedule with the new hotel dates
+    const newSchedule = { ...schedule };
+    const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
 
-          <h2 className="text-sm font-semibold">Trip End Date</h2>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(endDate, 'PPP')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={handleEndDateSelect}
-                initialFocus
-                disabled={(date) => date <= startDate}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div>
-          <label htmlFor="planName" className="block text-sm font-medium text-gray-700">Plan Name</label>
-          <input
-            type="text"
-            id="planName"
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <Button onClick={handleSavePlan}>Save Plan</Button>
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <DaySelector
-            tripDays={tripDays}
-            startDate={startDate}
-            selectedDate={selectedDate}
-            handleDaySelect={handleDaySelect}
-            removeDay={removeDay}
-          />
-          <Button
-            variant="ghost"
-            className="justify-start w-full my-1"
-            onClick={addDay}
-          >
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Day
-          </Button>
-          <div className="mt-auto">
-            <p className="text-lg font-semibold mb-2">Total Price: ${totalPrice.toFixed(2)}</p>
-            <CheckoutButton
-              totalPrice={totalPrice}
-              planName={planName}
-              schedule={schedule}
-              startDate={startDate}
-              endDate={endDate}
-            />
+    dateRange.forEach(date => {
+      const dateKey = format(date, 'yyyy-MM-dd');
+      if (newSchedule[dateKey]) {
+        const hotel = Object.values(schedule)
+          .flatMap(day => day.Accommodation)
+          .find(h => h.id === hotelId);
+
+        if (hotel) {
+          newSchedule[dateKey].Accommodation = [hotel];
+        }
+      }
+    });
+
+    updateSchedule(newSchedule);
+  };
+
+  const handleHotelDrop = (e: React.DragEvent<HTMLDivElement>, dropDate: string) => {
+    e.preventDefault();
+    try {
+      const item = JSON.parse(e.dataTransfer.getData("application/json"));
+      if (item.category.toLowerCase() === 'hotel') {
+        const newSchedule = { ...schedule };
+        newSchedule[dropDate] = {
+          ...newSchedule[dropDate],
+          Accommodation: [{
+            ...item,
+            price: item.totalPrice,
+            guestCount: item.guestCount
+          }]
+        };
+        updateSchedule(newSchedule);
+      }
+    } catch (error) {
+      console.error("Error handling hotel drop:", error);
+    }
+  };
+
+  const removeHotel = (date: string) => {
+    const newSchedule = { ...schedule };
+    newSchedule[date] = {
+      ...newSchedule[date],
+      Accommodation: []
+    };
+    updateSchedule(newSchedule);
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-130px)] w-full bg-gray-100">
+      {/* Left Sidebar */}
+      <aside className="bg-white w-64 flex flex-col">
+        {/* Plan Details Section */}
+        <div className="p-4 border-b">
+
+          {/* Date Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-gray-500" />
+              <div className="flex-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full h-8 px-2 text-xs justify-between"
+                    >
+                      {format(startDate, 'MMM dd')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={handleStartDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <span className="text-xs text-gray-500">to</span>
+              <div className="flex-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full h-8 px-2 text-xs justify-between"
+                    >
+                      {format(endDate, 'MMM dd')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={handleEndDateSelect}
+                      initialFocus
+                      disabled={(date) => date <= startDate}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </div>
-        </ScrollArea>
+
+          {/* Hotel Basket Section */}
+          <div className="p-4 border-b">
+            <h2 className="font-semibold text-gray-800 mb-3">Hotels</h2>
+            <ScrollArea className="h-[200px] pr-2">
+              <div className="space-y-3">
+                {Object.entries(schedule)
+                  .filter(([date]) => {
+                    const currentDate = new Date(date);
+                    return currentDate >= startDate && currentDate <= endDate;
+                  })
+                  .map(([date, daySchedule]) => (
+                    <div key={date}>
+                      <div className="flex items-center mb-1">
+                        <div className="text-xs font-semibold text-gray-600">
+                          {format(new Date(date), 'MMM dd')}
+                        </div>
+                      </div>
+                      <div
+                        className="bg-gray-50 border border-gray-100 rounded-lg p-2 transition-colors duration-200 hover:bg-gray-100/50"
+                        onDrop={(e) => handleHotelDrop(e, date)}
+                        onDragOver={(e) => e.preventDefault()}
+                      >
+                        {daySchedule.Accommodation.length > 0 ? (
+                          daySchedule.Accommodation.map((hotel, index) => (
+                            <div
+                              key={index}
+                              className="bg-white rounded-lg shadow-sm p-3 border border-gray-100"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-800">{hotel.name}</div>
+                                  <div className="text-xs text-gray-500 mt-0.5">${hotel.price}</div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 hover:bg-red-50"
+                                  onClick={() => removeHotel(date)}
+                                >
+                                  <TrashIcon className="h-3.5 w-3.5 text-red-500" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs text-gray-400 text-center py-3 select-none">
+                            Drop hotel here
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+
+        {/* Days Section */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="p-4 flex items-center justify-between">
+            <h2 className="font-semibold">Trip Days</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={addDay}
+              className="text-blue-600"
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Add Day
+            </Button>
+          </div>
+          <ScrollArea className="flex-1 px-4">
+            <DaySelector
+              tripDays={tripDays}
+              startDate={startDate}
+              selectedDate={selectedDate}
+              handleDaySelect={handleDaySelect}
+              removeDay={removeDay}
+            />
+          </ScrollArea>
+        </div>
+
+        {/* Sticky Bottom Section */}
+        <div className="border-t p-4 bg-white">
+          <div className="mb-2">
+            <p className="text-lg font-semibold">Total Price: ${totalPrice.toFixed(2)}</p>
+          </div>
+          <CheckoutButton
+            totalPrice={totalPrice}
+            planName={planName}
+            schedule={schedule}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        </div>
       </aside>
+
+      {/* Schedule View - without Accommodation */}
       <ScheduleView
         selectedDate={selectedDate}
         startDate={startDate}
         schedule={schedule}
         updateSchedule={updateSchedule}
+        planName={planName}
+        onPlanNameChange={setPlanName}
+        onSavePlan={handleSavePlan}
       />
-      <div className="flex-1 p-6 overflow-auto bg-white shadow-md m-6 rounded-lg">
-        <ActivitySelector
-          cityData={cityData}
-        />
+
+      {/* Activity Selector */}
+      <div className="flex-1 h-full overflow-auto">
+        <div className="p-6 bg-white shadow-md m-6 rounded-lg">
+          <ActivitySelector cityData={cityData} schedule={schedule} />
+        </div>
       </div>
     </div>
   );

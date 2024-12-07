@@ -1,34 +1,58 @@
 import React, { useState } from 'react';
-import { Activity, City } from './types';
+import { Activity, City, Schedule } from './types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ActivitySelectorProps {
   cityData: City[];
+  schedule: Schedule;
 }
 
-export default function ActivitySelector({ cityData }: ActivitySelectorProps) {
+export default function ActivitySelector({ cityData, schedule }: ActivitySelectorProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedTab, setSelectedTab] = useState<'hotels' | 'activities'>('hotels');
   const [guestCount, setGuestCount] = useState<number>(1);
   const [selectedCity, setSelectedCity] = useState<City | 'All'>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const { toast } = useToast();
+
+  const canAddActivities = () => {
+    if (!schedule) return false;
+    return Object.entries(schedule).every(([_, daySchedule]) => 
+      daySchedule.Accommodation && daySchedule.Accommodation.length > 0
+    );
+  };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: Activity, category: string) => {
-    if (item.price > 0) {
-      e.dataTransfer.setData("application/json", JSON.stringify({
-        ...item,
-        type: category,
-        guestCount,
-        totalPrice: item.price * guestCount,
-        isHotel: category.toLowerCase() === 'hotel'
-      }));
-      if (e.currentTarget.classList.contains('activity-card')) {
-        e.currentTarget.classList.add('dragging');
-      }
-    } else {
+    if (item.price <= 0) {
       e.preventDefault();
+      return;
+    }
+
+    const isHotel = category.toLowerCase() === 'hotel';
+    if (!isHotel && !canAddActivities()) {
+      e.preventDefault();
+      toast({
+        title: "Hotels Required",
+        description: "Please select hotels for all days before adding activities.",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    e.dataTransfer.setData("application/json", JSON.stringify({
+      ...item,
+      type: category,
+      guestCount,
+      totalPrice: item.price * guestCount,
+      isHotel: isHotel
+    }));
+    
+    if (e.currentTarget.classList.contains('activity-card')) {
+      e.currentTarget.classList.add('dragging');
     }
   };
 
@@ -37,7 +61,7 @@ export default function ActivitySelector({ cityData }: ActivitySelectorProps) {
       e.currentTarget.classList.remove('dragging');
     }
   };
-
+  
   const getActivities = (type: 'hotels' | 'activities') => {
     let allActivities: { activity: Activity; category: string }[] = [];
 
