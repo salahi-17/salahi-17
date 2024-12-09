@@ -4,6 +4,53 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { useInView } from 'react-intersection-observer';
+import LazyImage from '@/components/LazyImage';
+
+interface ActivityCardProps {
+  item: Activity;
+  category: string;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
+  onClick: () => void;
+}
+
+const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onClick }: ActivityCardProps) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <div
+      ref={ref}
+      className={`activity-card bg-white shadow-lg rounded-lg overflow-hidden 
+        ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'} 
+        hover:shadow-xl transition-shadow`}
+      draggable={item.price > 0}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onClick={onClick}
+    >
+      {inView && (
+        <>
+          <LazyImage
+            src={item.image}
+            alt={item.name}
+            className="w-full h-48 object-cover"
+          />
+          <div className="p-4">
+            <h4 className="font-semibold text-xl mb-2">{item.name}</h4>
+            <p className="text-sm text-gray-600">{category}</p>
+            {item.price > 0 && <p className="text-sm font-bold">${item.price.toFixed(2)}</p>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+});
+
+ActivityCard.displayName = 'ActivityCard';
 
 interface ActivitySelectorProps {
   cityData: City[];
@@ -99,29 +146,26 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
   const renderActivityGrid = (activities: { activity: Activity; category: string }[]) => (
     <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {activities.map(({ activity: item, category }, index) => (
-        <Dialog key={index}>
+        <Dialog key={`${item.id}-${index}`}>
           <DialogTrigger asChild>
-            <div
-              className={`activity-card bg-white shadow-lg rounded-lg overflow-hidden ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'} hover:shadow-xl transition-shadow`}
-              draggable={item.price > 0}
+            <ActivityCard
+              item={item}
+              category={category}
               onDragStart={(e) => handleDragStart(e, item, category)}
               onDragEnd={handleDragEnd}
               onClick={() => setSelectedActivity(item)}
-            >
-              <img src={item.image} alt={item.name} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h4 className="font-semibold text-xl mb-2">{item.name}</h4>
-                <p className="text-sm text-gray-600">{category}</p>
-                {item.price > 0 && <p className="text-sm font-bold">${item.price.toFixed(2)}</p>}
-              </div>
-            </div>
+            />
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>{item.name}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <img src={item.image} alt={item.name} className="w-full h-64 object-cover rounded mb-2" />
+              <LazyImage
+                src={item.image}
+                alt={item.name}
+                className="w-full h-64 object-cover rounded mb-2"
+              />
               <p className="font-semibold">{item.description}</p>
               <p className="font-semibold">Location: {item.location}</p>
               {item.price > 0 && (

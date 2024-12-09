@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Schedule, ScheduleItem } from './types';
 import { toast } from '@/components/ui/use-toast';
+import { useInView } from 'react-intersection-observer';
+import LazyImage from '@/components/LazyImage';
 
 interface ScheduleViewProps {
   selectedDate: Date;
@@ -15,6 +17,50 @@ interface ScheduleViewProps {
   onPlanNameChange: (newName: string) => void;
   onSavePlan: () => void;
 }
+
+interface ScheduleItemCardProps {
+  item: ScheduleItem;
+  onRemove: () => void;
+}
+
+const ScheduleItemCard = React.memo(({ item, onRemove }: ScheduleItemCardProps) => {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <div ref={ref} className="relative mb-2 rounded overflow-hidden">
+      {inView && (
+        <>
+          <LazyImage
+            src={item.image}
+            alt={item.name}
+            className="w-full h-24 object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-2">
+            <div className="flex justify-between items-start">
+              <span className="text-white text-shadow">{item.name}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onRemove}
+              >
+                <TrashIcon className="h-4 w-4 text-white" />
+              </Button>
+            </div>
+            <div className="text-white text-sm">
+              <p>Guests: {item.guestCount}</p>
+              {item.price > 0 && <p>Total: ${item.price.toFixed(2)}</p>}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+});
+
+ScheduleItemCard.displayName = 'ScheduleItemCard';
 
 export default function ScheduleView({ selectedDate, startDate, schedule, updateSchedule, planName, onPlanNameChange, onSavePlan }: ScheduleViewProps) {
   const timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
@@ -85,15 +131,13 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
   };
 
   return (
-    <div className="flex flex-col w-96 h-full bg-white relative"> {/* Added relative */}
-      {/* Day header */}
+    <div className="flex flex-col w-96 h-full bg-white relative">
       <div className="px-4 pt-6 pb-4 border-b">
         <h1 className="text-2xl font-bold">
           Day {differenceInDays(selectedDate, startDate) + 1}
         </h1>
       </div>
-  
-      {/* Scrollable content - Adjust height to account for header and footer */}
+
       <div className="flex-1 overflow-auto px-4">
         <div className="py-4 space-y-4">
           {timeSlots.map((timeSlot) => (
@@ -104,54 +148,39 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
                 onDrop={(e) => handleDrop(e, timeSlot)}
                 onDragOver={handleDragOver}
               >
-                  {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
-                    schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
-                      <div key={index} className="relative mb-2 rounded overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-24 object-cover" />
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-2">
-                          <div className="flex justify-between items-start">
-                            <span className="text-white text-shadow">{item.name}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeScheduleItem(timeSlot, index)}
-                            >
-                              <TrashIcon className="h-4 w-4 text-white" />
-                            </Button>
-                          </div>
-                          <div className="text-white text-sm">
-                            <p>Guests: {item.guestCount}</p>
-                            {item.price > 0 && <p>Total: ${item.price.toFixed(2)}</p>}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-gray-400 text-center py-2">
-                      Drag and drop activities here
-                    </div>
-                  )}
-                 </div>
-          </div>
-        ))}
+                {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
+                  schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
+                    <ScheduleItemCard
+                      key={`${item.id}-${index}`}
+                      item={item}
+                      onRemove={() => removeScheduleItem(timeSlot, index)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-gray-400 text-center py-2">
+                    Drag and drop activities here
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
 
-    {/* Fixed bottom section - Use absolute positioning */}
-    <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-4 flex items-center gap-4">
-      <input
-        type="text"
-        value={planName}
-        onChange={(e) => onPlanNameChange(e.target.value)}
-        placeholder="Enter Plan Name"
-        className="flex-1 px-3 py-2 border rounded-md text-sm"
-      />
-      <Button onClick={onSavePlan} className="shrink-0">
-        Save Plan
-      </Button>
+      <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-4 flex items-center gap-4">
+        <input
+          type="text"
+          value={planName}
+          onChange={(e) => onPlanNameChange(e.target.value)}
+          placeholder="Enter Plan Name"
+          className="flex-1 px-3 py-2 border rounded-md text-sm"
+        />
+        <Button onClick={onSavePlan} className="shrink-0">
+          Save Plan
+        </Button>
+      </div>
+      
+      <div className="h-[72px]" />
     </div>
-    
-    {/* Add padding at the bottom to prevent content from being hidden behind the fixed bottom section */}
-    <div className="h-[72px]" /> {/* Adjust height based on your bottom section height */}
-  </div>
-)};
+  );
+}
