@@ -22,25 +22,24 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, timeSlot: string) => {
     e.preventDefault();
     try {
-      const item = JSON.parse(e.dataTransfer.getData("application/json")) as ScheduleItem;
-      if (!item) return;
-      
-      // Add validation for required hotel
-      const dateKey = format(selectedDate, 'yyyy-MM-dd');
-      if (!schedule[dateKey]?.Accommodation?.length) {
-        toast({
-          title: "Hotel Required",
-          description: "Please select a hotel for this day before adding activities.",
-          duration: 3000,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (item.category.toLowerCase() !== 'hotel') { // Only handle non-hotel items
+      const item = JSON.parse(e.dataTransfer.getData("application/json")) as ScheduleItem & { totalPrice?: number };
+      if (item.category.toLowerCase() !== 'hotel') {
         const dateKey = format(selectedDate, 'yyyy-MM-dd');
+        
+        // Check if there's a hotel for this day
+        const hasHotel = schedule[dateKey]?.Accommodation?.length > 0;
+        if (!hasHotel) {
+          toast({
+            title: "Hotel Required",
+            description: "Please select a hotel for this day before adding activities.",
+            duration: 3000,
+            variant: "destructive",
+          });
+          return;
+        }
+  
         const existingItems = schedule[dateKey]?.[timeSlot] || [];
-
+  
         if (!existingItems.some(existingItem => existingItem.id === item.id)) {
           const newSchedule = { ...schedule };
           if (!newSchedule[dateKey]) {
@@ -52,14 +51,20 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
               Night: []
             };
           }
+  
+          const finalPrice = item.totalPrice || item.price * (item.guestCount || 1);
+  
+          const newItem: ScheduleItem = {
+            ...item,
+            price: finalPrice,
+            guestCount: item.guestCount || 1
+          };
+  
           newSchedule[dateKey] = {
             ...newSchedule[dateKey],
-            [timeSlot]: [...existingItems, {
-              ...item,
-              price: item.totalPrice,
-              guestCount: item.guestCount
-            }]
+            [timeSlot]: [...existingItems, newItem]
           };
+  
           updateSchedule(newSchedule);
         }
       }

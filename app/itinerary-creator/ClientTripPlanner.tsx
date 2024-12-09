@@ -9,7 +9,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import DaySelector from './DaySelector';
 import ScheduleView from './ScheduleView';
@@ -265,13 +264,11 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   };
 
   const initializeSchedule = (start: Date, end: Date) => {
-    const days = differenceInDays(end, start) + 1;
     const newSchedule: Schedule = {};
-
-    // Create schedule entries for each day in the range
-    for (let i = 0; i < days; i++) {
-      const currentDate = addDays(start, i);
-      const dateKey = format(currentDate, 'yyyy-MM-dd');
+    const dateRange = eachDayOfInterval({ start, end });
+  
+    dateRange.forEach(date => {
+      const dateKey = format(date, 'yyyy-MM-dd');
       newSchedule[dateKey] = {
         Accommodation: [],
         Morning: [],
@@ -279,8 +276,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         Evening: [],
         Night: []
       };
-    }
-
+    });
+  
     setSchedule(newSchedule);
   };
 
@@ -529,54 +526,60 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             <h2 className="font-semibold text-gray-800 mb-3">Hotels</h2>
             <ScrollArea className="h-[200px] pr-2">
               <div className="space-y-3">
-                {Object.entries(schedule)
-                  .filter(([date]) => {
-                    const currentDate = new Date(date);
-                    return currentDate >= startDate && currentDate <= endDate;
-                  })
-                  .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime()) // Add sorting
-                  .map(([date, daySchedule]) => (
-                    <div key={date}>
-                      <div className="flex items-center mb-1">
-                        <div className="text-xs font-semibold text-gray-600">
-                          {format(new Date(date), 'MMM dd')}
+                {eachDayOfInterval({ start: startDate, end: endDate })
+                  .map(date => {
+                    const dateKey = format(date, 'yyyy-MM-dd');
+                    const daySchedule = schedule[dateKey] || {
+                      Accommodation: [],
+                      Morning: [],
+                      Afternoon: [],
+                      Evening: [],
+                      Night: []
+                    };
+
+                    return (
+                      <div key={dateKey}>
+                        <div className="flex items-center mb-1">
+                          <div className="text-xs font-semibold text-gray-600">
+                            {format(date, 'MMM dd')}
+                          </div>
+                        </div>
+                        <div
+                          className="bg-gray-50 border border-gray-100 rounded-lg p-2 transition-colors duration-200 hover:bg-gray-100/50"
+                          onDrop={(e) => handleHotelDrop(e, dateKey)}
+                          onDragOver={(e) => e.preventDefault()}
+                        >
+                          {daySchedule.Accommodation.length > 0 ? (
+                            daySchedule.Accommodation.map((hotel, index) => (
+                              <div
+                                key={index}
+                                className="bg-white rounded-lg shadow-sm p-3 border border-gray-100"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-800">{hotel.name}</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">${hotel.price}</div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 hover:bg-red-50"
+                                    onClick={() => removeHotel(dateKey)}
+                                  >
+                                    <TrashIcon className="h-3.5 w-3.5 text-red-500" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-xs text-gray-400 text-center py-3 select-none">
+                              Drop hotel here
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div
-                        className="bg-gray-50 border border-gray-100 rounded-lg p-2 transition-colors duration-200 hover:bg-gray-100/50"
-                        onDrop={(e) => handleHotelDrop(e, date)}
-                        onDragOver={(e) => e.preventDefault()}
-                      >
-                        {daySchedule.Accommodation.length > 0 ? (
-                          daySchedule.Accommodation.map((hotel, index) => (
-                            <div
-                              key={index}
-                              className="bg-white rounded-lg shadow-sm p-3 border border-gray-100"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-800">{hotel.name}</div>
-                                  <div className="text-xs text-gray-500 mt-0.5">${hotel.price}</div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 hover:bg-red-50"
-                                  onClick={() => removeHotel(date)}
-                                >
-                                  <TrashIcon className="h-3.5 w-3.5 text-red-500" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-xs text-gray-400 text-center py-3 select-none">
-                            Drop hotel here
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </ScrollArea>
           </div>

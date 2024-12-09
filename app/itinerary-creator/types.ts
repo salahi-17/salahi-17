@@ -17,6 +17,7 @@ export interface ScheduleItem extends Activity {
   createdAt: Date;
   updatedAt: Date;
   guestCount: number;
+  totalPrice?: number; 
 }
 
 export interface City {
