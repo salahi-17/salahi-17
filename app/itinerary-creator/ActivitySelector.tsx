@@ -6,6 +6,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useInView } from 'react-intersection-observer';
 import LazyImage from '@/components/LazyImage';
+import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+
+interface ActivitySelectorProps {
+  cityData: City[];
+  schedule: Schedule;
+  activeTab: 'hotels' | 'activities';
+  startDate: Date;
+  endDate: Date;
+  categories: string[];
+  onDateChange: (start: Date, end: Date) => void;
+}
 
 interface ActivityCardProps {
   item: Activity;
@@ -57,17 +68,25 @@ interface ActivitySelectorProps {
   schedule: Schedule;
 }
 
-export default function ActivitySelector({ cityData, schedule }: ActivitySelectorProps) {
+export default function ActivitySelector({
+  cityData,
+  schedule,
+  activeTab,
+  startDate,
+  endDate,
+  categories,
+  onDateChange
+}: ActivitySelectorProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'hotels' | 'activities'>('hotels');
   const [guestCount, setGuestCount] = useState<number>(1);
   const [selectedCity, setSelectedCity] = useState<City | 'All'>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [searchLocation, setSearchLocation] = useState("");
   const { toast } = useToast();
 
   const canAddActivities = () => {
     if (!schedule) return false;
-    return Object.entries(schedule).every(([_, daySchedule]) => 
+    return Object.entries(schedule).every(([_, daySchedule]) =>
       daySchedule.Accommodation && daySchedule.Accommodation.length > 0
     );
   };
@@ -90,14 +109,17 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
       return;
     }
 
-    e.dataTransfer.setData("application/json", JSON.stringify({
+    const dragData = {
       ...item,
+      category,
       type: category,
       guestCount,
       totalPrice: item.price * guestCount,
       isHotel: isHotel
-    }));
-    
+    };
+
+    e.dataTransfer.setData("application/json", JSON.stringify(dragData));
+
     if (e.currentTarget.classList.contains('activity-card')) {
       e.currentTarget.classList.add('dragging');
     }
@@ -108,7 +130,7 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
       e.currentTarget.classList.remove('dragging');
     }
   };
-  
+
   const getActivities = (type: 'hotels' | 'activities') => {
     let allActivities: { activity: Activity; category: string }[] = [];
 
@@ -121,7 +143,11 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
               return;
             }
             activities.forEach(activity => {
-              allActivities.push({ activity, category });
+              if (searchLocation === "" ||
+                activity.name.toLowerCase().includes(searchLocation.toLowerCase()) ||
+                activity.location.toLowerCase().includes(searchLocation.toLowerCase())) {
+                allActivities.push({ activity, category });
+              }
             });
           }
         });
@@ -134,7 +160,11 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
             return;
           }
           activities.forEach(activity => {
-            allActivities.push({ activity, category });
+            if (searchLocation === "" ||
+              activity.name.toLowerCase().includes(searchLocation.toLowerCase()) ||
+              activity.location.toLowerCase().includes(searchLocation.toLowerCase())) {
+              allActivities.push({ activity, category });
+            }
           });
         }
       });
@@ -151,7 +181,7 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
             <ActivityCard
               item={item}
               category={category}
-              onDragStart={(e) => handleDragStart(e, item, category)}
+              onDragStart={(e: any) => handleDragStart(e, item, category)}
               onDragEnd={handleDragEnd}
               onClick={() => setSelectedActivity(item)}
             />
@@ -200,80 +230,119 @@ export default function ActivitySelector({ cityData, schedule }: ActivitySelecto
   );
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <Tabs defaultValue="hotels" className="w-full" onValueChange={(value) => setSelectedTab(value as 'hotels' | 'activities')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="hotels">Hotels</TabsTrigger>
-          <TabsTrigger value="activities">Activities</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="hotels" className="mt-6">
-          <div className="mb-6">
-            <Select onValueChange={(value: string) => {
-              if (value === 'All') {
-                setSelectedCity('All');
-              } else {
-                const found = cityData.find(city => city.name === value);
-                setSelectedCity(found || 'All');
-              }
-            }}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an area" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Areas</SelectItem>
-                {cityData.map(city => (
-                  <SelectItem key={city.name} value={city.name}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {renderActivityGrid(getActivities('hotels'))}
-        </TabsContent>
+    <div className="flex flex-col h-full w-full overflow-hidden">
+      <div className="flex-1 overflow-auto px-6 py-4">
+        {activeTab === 'hotels' ? (
+          <div className="space-y-6">
+            {/* Filters for hotels */}
+            <div className="flex gap-4">
+              <div>
+                <span className="text-sm text-gray-600">Where to?</span>
+                {/* Location selector */}
+                <div>
+                  <Select
+                    value={selectedCity === 'All' ? 'All' : selectedCity.name}
+                    onValueChange={(value) => {
+                      if (value === 'All') {
+                        setSelectedCity('All');
+                      } else {
+                        const found = cityData.find(city => city.name === value);
+                        setSelectedCity(found || 'All');
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="All Locations" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All Locations</SelectItem>
+                      {cityData.map(city => (
+                        <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-        <TabsContent value="activities" className="mt-6">
-          <div className="mb-6 flex space-x-4">
-            <Select onValueChange={(value: string) => setSelectedCategory(value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Categories</SelectItem>
-                {Array.from(new Set(cityData.flatMap(city => 
-                  Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
-                ))).map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select onValueChange={(value: string) => {
-              if (value === 'All') {
-                setSelectedCity('All');
-              } else {
-                const found = cityData.find(city => city.name === value);
-                setSelectedCity(found || 'All');
-              }
-            }}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an area" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Areas</SelectItem>
-                {cityData.map(city => (
-                  <SelectItem key={city.name} value={city.name}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <div>
+                <span className="text-sm text-gray-600">Travelers</span>
+                <Select value={guestCount.toString()} onValueChange={(v) => setGuestCount(Number(v))}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue>
+                      {guestCount} {guestCount === 1 ? 'Traveler' : 'Travelers'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Budget</span>
+                <QuestionMarkCircledIcon className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+
+
+            <h2 className="text-xl font-semibold">
+              Hotels in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
+            </h2>
+
+            {/* Use the same renderActivityGrid for hotels */}
+            {renderActivityGrid(getActivities('hotels'))}
           </div>
-          {renderActivityGrid(getActivities('activities'))}
-        </TabsContent>
-      </Tabs>
+        ) : (
+          // Activities View
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Categories</SelectItem>
+                  {Array.from(new Set(cityData.flatMap(city =>
+                    Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
+                  ))).map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedCity === 'All' ? 'All' : selectedCity.name}
+                onValueChange={(value) => {
+                  if (value === 'All') {
+                    setSelectedCity('All');
+                  } else {
+                    const found = cityData.find(city => city.name === value);
+                    setSelectedCity(found || 'All');
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select an area" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Locations</SelectItem>
+                  {cityData.map(city => (
+                    <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <h2 className="text-xl font-semibold">
+              {selectedCategory === 'All' ? 'All Activities' : selectedCategory} in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
+            </h2>
+
+            {renderActivityGrid(getActivities('activities'))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

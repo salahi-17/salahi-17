@@ -8,13 +8,15 @@ import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import DaySelector from './DaySelector';
 import ScheduleView from './ScheduleView';
 import ActivitySelector from './ActivitySelector';
 import CheckoutButton from './CheckoutButton';
 import { City, Schedule, Activity, CityCategories, ScheduleItem } from './types';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LazyImage from '@/components/LazyImage';
 
 interface ClientTripPlannerProps {
   initialCityData: Activity[];
@@ -29,7 +31,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const today = new Date();
   const tomorrow = addDays(today, 1);
 
-  const [currentTab, setCurrentTab] = useState<'hotels' | 'activities'>('hotels');
   const [startDate, setStartDate] = useState<Date>(today);
   const [endDate, setEndDate] = useState<Date>(tomorrow);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
@@ -41,6 +42,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [planName, setPlanName] = useState<string>("");
   const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<'hotels' | 'activities'>('hotels');
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -266,7 +268,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const initializeSchedule = (start: Date, end: Date) => {
     const newSchedule: Schedule = {};
     const dateRange = eachDayOfInterval({ start, end });
-  
+
     dateRange.forEach(date => {
       const dateKey = format(date, 'yyyy-MM-dd');
       newSchedule[dateKey] = {
@@ -277,7 +279,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         Night: []
       };
     });
-  
+
     setSchedule(newSchedule);
   };
 
@@ -456,132 +458,176 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }
   };
 
-  const removeHotel = (date: string) => {
-    const newSchedule = { ...schedule };
-    newSchedule[date] = {
-      ...newSchedule[date],
-      Accommodation: []
-    };
-    updateSchedule(newSchedule);
+  const ScheduleList = ({ schedule, selectedDate }: { schedule: Schedule; selectedDate: Date }) => {
+    return (
+      <ScrollArea className="flex-1">
+        <div className="space-y-4 p-4">
+          {Object.entries(schedule).map(([date, daySchedule]) => {
+            const allItems = [
+              ...daySchedule.Accommodation.map(item => ({ ...item, timeSlot: 'Accommodation' })),
+              ...daySchedule.Morning.map(item => ({ ...item, timeSlot: 'Morning' })),
+              ...daySchedule.Afternoon.map(item => ({ ...item, timeSlot: 'Afternoon' })),
+              ...daySchedule.Evening.map(item => ({ ...item, timeSlot: 'Evening' })),
+              ...daySchedule.Night.map(item => ({ ...item, timeSlot: 'Night' }))
+            ];
+
+            if (allItems.length === 0) return null;
+
+            return (
+              <div key={date} className="space-y-2">
+                <h3 className="text-sm font-medium">Day {differenceInDays(new Date(date), startDate) + 1}</h3>
+                {allItems.map((item, index) => (
+                  <div
+                    key={`${item.id}-${index}`}
+                    className="relative h-20 rounded-lg overflow-hidden"
+                  >
+                    <LazyImage
+                      src={item.image}
+                      alt={item.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 p-2 flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <span className="text-white text-sm font-medium">{item.name}</span>
+                        <span className="text-white text-xs">{item.timeSlot}</span>
+                      </div>
+                      <div className="text-white text-xs">
+                        ${item.price.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+        <ScrollBar />
+      </ScrollArea>
+    );
   };
 
   return (
     <div className="flex h-[calc(100vh-130px)] w-full bg-gray-100">
-      {/* Left Sidebar */}
-      <aside className="bg-white w-64 flex flex-col">
-        {/* Plan Details Section */}
-        <div className="p-4 border-b">
-
-          {/* Date Selection */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-gray-500" />
-              <div className="flex-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full h-8 px-2 text-xs justify-between"
+      {/* Left Panel */}
+      <div className="w-64 bg-white flex flex-col ">
+        {/* Itinerary Status/List */}
+        <div className="p-4">
+          {activeTab === 'hotels' ? (
+            // Hotels List
+            <div className="space-y-2">
+              {Object.entries(schedule).some(([_, day]) => day.Accommodation.length > 0) ? (
+                Object.entries(schedule).map(([date, day]) => (
+                  day.Accommodation.map((hotel, index) => (
+                    <div
+                      key={`${hotel.id}-${index}`}
+                      className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
                     >
-                      {format(startDate, 'MMM dd')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={handleStartDateSelect}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <span className="text-xs text-gray-500">to</span>
-              <div className="flex-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full h-8 px-2 text-xs justify-between"
-                    >
-                      {format(endDate, 'MMM dd')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={handleEndDateSelect}
-                      initialFocus
-                      disabled={(date) => date <= startDate}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-
-          {/* Hotel Basket Section */}
-          <div className="p-4 border-b">
-            <h2 className="font-semibold text-gray-800 mb-3">Hotels</h2>
-            <ScrollArea className="h-[200px] pr-2">
-              <div className="space-y-3">
-                {eachDayOfInterval({ start: startDate, end: endDate })
-                  .map(date => {
-                    const dateKey = format(date, 'yyyy-MM-dd');
-                    const daySchedule = schedule[dateKey] || {
-                      Accommodation: [],
-                      Morning: [],
-                      Afternoon: [],
-                      Evening: [],
-                      Night: []
-                    };
-
-                    return (
-                      <div key={dateKey}>
-                        <div className="flex items-center mb-1">
-                          <div className="text-xs font-semibold text-gray-600">
-                            {format(date, 'MMM dd')}
-                          </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{hotel.name}</p>
+                          <p className="text-xs text-gray-500">
+                            Day {differenceInDays(new Date(date), startDate) + 1}
+                          </p>
                         </div>
-                        <div
-                          className="bg-gray-50 border border-gray-100 rounded-lg p-2 transition-colors duration-200 hover:bg-gray-100/50"
-                          onDrop={(e) => handleHotelDrop(e, dateKey)}
-                          onDragOver={(e) => e.preventDefault()}
-                        >
-                          {daySchedule.Accommodation.length > 0 ? (
-                            daySchedule.Accommodation.map((hotel, index) => (
-                              <div
-                                key={index}
-                                className="bg-white rounded-lg shadow-sm p-3 border border-gray-100"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-sm font-medium text-gray-800">{hotel.name}</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">${hotel.price}</div>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 hover:bg-red-50"
-                                    onClick={() => removeHotel(dateKey)}
-                                  >
-                                    <TrashIcon className="h-3.5 w-3.5 text-red-500" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-xs text-gray-400 text-center py-3 select-none">
-                              Drop hotel here
-                            </div>
-                          )}
+                        <p className="text-sm font-medium">${hotel.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  ))
+                ))
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-gray-500 text-sm">
+                    No hotels selected
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Activities List
+            <div className="space-y-2">
+              {Object.entries(schedule).some(([_, day]) =>
+                ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
+                  day[timeSlot].length > 0
+                )
+              ) ? (
+                Object.entries(schedule).map(([date, day]) => (
+                  ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
+                    day[timeSlot].map((activity, index) => (
+                      <div
+                        key={`${activity.id}-${timeSlot}-${index}`}
+                        className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">{activity.name}</p>
+                            <p className="text-xs text-gray-500">
+                              Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
+                            </p>
+                          </div>
+                          <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
                         </div>
                       </div>
-                    );
-                  })}
-              </div>
-            </ScrollArea>
+                    ))
+                  ))
+                ))
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-gray-500 text-sm">
+                    No activities selected
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* Date Selection */}
+        <div className="p-4">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-gray-600 mb-2 block">Trip Start Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(startDate, "MMM dd, yyyy")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(date) => date && setStartDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <label className="text-sm text-gray-600 mb-2 block">Trip End Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(endDate, "MMM dd, yyyy")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(date) => date && setEndDate(date)}
+                    disabled={(date) => date < startDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
 
@@ -592,7 +638,25 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             <Button
               variant="ghost"
               size="sm"
-              onClick={addDay}
+              onClick={() => {
+                const newEndDate = addDays(endDate, 1);
+                setEndDate(newEndDate);
+                setTripDays(prevDays => prevDays + 1);
+
+                // Initialize new day in schedule
+                const newDateKey = format(newEndDate, 'yyyy-MM-dd');
+                const newSchedule = {
+                  ...schedule,
+                  [newDateKey]: {
+                    Accommodation: [],
+                    Morning: [],
+                    Afternoon: [],
+                    Evening: [],
+                    Night: []
+                  }
+                };
+                updateSchedule(newSchedule);
+              }}
               className="text-blue-600"
             >
               <PlusIcon className="h-4 w-4 mr-1" />
@@ -610,8 +674,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           </ScrollArea>
         </div>
 
-        {/* Sticky Bottom Section */}
-        <div className="border-t p-4 bg-white">
+        {/* Total Price and Checkout */}
+        <div className=" p-4">
           <div className="mb-2">
             <p className="text-lg font-semibold">Total Price: ${totalPrice.toFixed(2)}</p>
           </div>
@@ -623,23 +687,43 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             endDate={endDate}
           />
         </div>
-      </aside>
+      </div>
 
-      {/* Schedule View - without Accommodation */}
-      <ScheduleView
-        selectedDate={selectedDate}
-        startDate={startDate}
-        schedule={schedule}
-        updateSchedule={updateSchedule}
-        planName={planName}
-        onPlanNameChange={setPlanName}
-        onSavePlan={handleSavePlan}
-      />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <div className="p-4 bg-white ">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')}>
+            <TabsList className="grid w-[400px] grid-cols-2">
+              <TabsTrigger value="hotels">Hotels</TabsTrigger>
+              <TabsTrigger value="activities">Activities</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-      {/* Activity Selector */}
-      <div className="flex-1 h-full overflow-auto">
-        <div className="p-6 bg-white shadow-md m-6 rounded-lg">
-          <ActivitySelector cityData={cityData} schedule={schedule} />
+        <div className="flex-1 flex overflow-hidden">
+          <ScheduleView
+            selectedDate={selectedDate}
+            startDate={startDate}
+            schedule={schedule}
+            updateSchedule={updateSchedule}
+            planName={planName}
+            onPlanNameChange={setPlanName}
+            onSavePlan={handleSavePlan}
+            activeTab={activeTab}
+          />
+
+          <ActivitySelector
+            cityData={cityData}
+            schedule={schedule}
+            activeTab={activeTab}
+            startDate={startDate}
+            endDate={endDate}
+            categories={categories}
+            onDateChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+          />
         </div>
       </div>
     </div>
