@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Schedule, ScheduleItem } from './types';
+import { toast } from '@/components/ui/use-toast';
 
 interface ScheduleViewProps {
   selectedDate: Date;
@@ -22,6 +23,20 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
     e.preventDefault();
     try {
       const item = JSON.parse(e.dataTransfer.getData("application/json")) as ScheduleItem;
+      if (!item) return;
+      
+      // Add validation for required hotel
+      const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      if (!schedule[dateKey]?.Accommodation?.length) {
+        toast({
+          title: "Hotel Required",
+          description: "Please select a hotel for this day before adding activities.",
+          duration: 3000,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       if (item.category.toLowerCase() !== 'hotel') { // Only handle non-hotel items
         const dateKey = format(selectedDate, 'yyyy-MM-dd');
         const existingItems = schedule[dateKey]?.[timeSlot] || [];
@@ -65,25 +80,25 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
   };
 
   return (
-    <div className="flex flex-col w-96 h-full bg-white">
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-hidden">
-        <div className="px-4 pt-6">
-          <h1 className="text-2xl font-bold">
-            Day {differenceInDays(selectedDate, startDate) + 1}
-          </h1>
-        </div>
-
-        <ScrollArea className="h-[calc(100vh-160px)] px-4">
-          <div className="grid gap-4 py-6">
-            {timeSlots.map((timeSlot) => (
-              <div key={timeSlot} className="flex flex-col gap-2">
-                <span className="font-semibold">{timeSlot}</span>
-                <div
-                  className="border-2 border-dashed border-gray-300 p-2 rounded-md min-h-[120px]"
-                  onDrop={(e) => handleDrop(e, timeSlot)}
-                  onDragOver={handleDragOver}
-                >
+    <div className="flex flex-col w-96 h-full bg-white relative"> {/* Added relative */}
+      {/* Day header */}
+      <div className="px-4 pt-6 pb-4 border-b">
+        <h1 className="text-2xl font-bold">
+          Day {differenceInDays(selectedDate, startDate) + 1}
+        </h1>
+      </div>
+  
+      {/* Scrollable content - Adjust height to account for header and footer */}
+      <div className="flex-1 overflow-auto px-4">
+        <div className="py-4 space-y-4">
+          {timeSlots.map((timeSlot) => (
+            <div key={timeSlot} className="flex flex-col gap-2">
+              <span className="font-semibold">{timeSlot}</span>
+              <div
+                className="border-2 border-dashed border-gray-300 p-2 rounded-md min-h-[120px]"
+                onDrop={(e) => handleDrop(e, timeSlot)}
+                onDragOver={handleDragOver}
+              >
                   {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
                     schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
                       <div key={index} className="relative mb-2 rounded overflow-hidden">
@@ -111,26 +126,27 @@ export default function ScheduleView({ selectedDate, startDate, schedule, update
                       Drag and drop activities here
                     </div>
                   )}
-                </div>
-              </div>
-            ))}
+                 </div>
           </div>
-        </ScrollArea>
-      </div>
-
-      {/* Fixed bottom section */}
-      <div className="border-t bg-white p-4 flex items-center gap-4 w-full">
-        <input
-          type="text"
-          value={planName}
-          onChange={(e) => onPlanNameChange(e.target.value)}
-          placeholder="Enter Plan Name"
-          className="flex-1 px-3 py-2 border rounded-md text-sm"
-        />
-        <Button onClick={onSavePlan}>
-          Save Plan
-        </Button>
+        ))}
       </div>
     </div>
-  );
-}
+
+    {/* Fixed bottom section - Use absolute positioning */}
+    <div className="absolute bottom-0 left-0 right-0 border-t bg-white p-4 flex items-center gap-4">
+      <input
+        type="text"
+        value={planName}
+        onChange={(e) => onPlanNameChange(e.target.value)}
+        placeholder="Enter Plan Name"
+        className="flex-1 px-3 py-2 border rounded-md text-sm"
+      />
+      <Button onClick={onSavePlan} className="shrink-0">
+        Save Plan
+      </Button>
+    </div>
+    
+    {/* Add padding at the bottom to prevent content from being hidden behind the fixed bottom section */}
+    <div className="h-[72px]" /> {/* Adjust height based on your bottom section height */}
+  </div>
+)};

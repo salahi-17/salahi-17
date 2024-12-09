@@ -292,7 +292,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       setEndDate(newEndDate);
       const days = differenceInDays(newEndDate, date) + 1;
       setTripDays(days);
-      initializeSchedule(date, newEndDate);
+      initializeSchedule(date, newEndDate); // This will create new empty slots for all dates
     }
   };
 
@@ -301,41 +301,89 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       setEndDate(date);
       const days = differenceInDays(date, startDate) + 1;
       setTripDays(days);
-      initializeSchedule(startDate, date);
+
+      // Initialize schedule for the new date range while preserving existing data
+      const newSchedule = { ...schedule };
+      const currentDateKeys = Object.keys(newSchedule);
+
+      // Add new dates
+      for (let i = 0; i < days; i++) {
+        const currentDate = addDays(startDate, i);
+        const dateKey = format(currentDate, 'yyyy-MM-dd');
+        if (!newSchedule[dateKey]) {
+          newSchedule[dateKey] = {
+            Accommodation: [],
+            Morning: [],
+            Afternoon: [],
+            Evening: [],
+            Night: []
+          };
+        }
+      }
+
+      // Remove dates outside the new range
+      Object.keys(newSchedule).forEach(dateKey => {
+        const currentDate = new Date(dateKey);
+        if (currentDate < startDate || currentDate > date) {
+          delete newSchedule[dateKey];
+        }
+      });
+
+      updateSchedule(newSchedule);
     }
   };
 
   const addDay = () => {
-    setTripDays(prevDays => {
-      const newTripDays = prevDays + 1;
-      setEndDate(addDays(startDate, newTripDays - 1));
-      return newTripDays;
-    });
-  };
+    const newEndDate = addDays(endDate, 1);
+    setEndDate(newEndDate);
+    setTripDays(prevDays => prevDays + 1);
 
+    // Add new date to schedule
+    const newDateKey = format(newEndDate, 'yyyy-MM-dd');
+    const newSchedule = {
+      ...schedule,
+      [newDateKey]: {
+        Accommodation: [],
+        Morning: [],
+        Afternoon: [],
+        Evening: [],
+        Night: []
+      }
+    };
+    updateSchedule(newSchedule);
+  };
 
   const removeDay = (dayToRemove: number) => {
     if (tripDays > 1) {
-      setTripDays(prevDays => {
-        const newTripDays = prevDays - 1;
-        setEndDate(addDays(startDate, newTripDays - 1));
-        setSchedule(prevSchedule => {
-          const newSchedule: Schedule = {};
-          Object.entries(prevSchedule).forEach(([dateKey, daySchedule]) => {
-            const currentDate = parse(dateKey, 'yyyy-MM-dd', startDate);
-            const dayNumber = differenceInDays(currentDate, startDate) + 1;
-            if (dayNumber < dayToRemove) {
-              newSchedule[dateKey] = daySchedule;
-            } else if (dayNumber > dayToRemove) {
-              const newDate = addDays(currentDate, -1);
-              newSchedule[format(newDate, 'yyyy-MM-dd')] = daySchedule;
-            }
-          });
-          return newSchedule;
+      const dateToRemove = addDays(startDate, dayToRemove - 1);
+      const dateKeyToRemove = format(dateToRemove, 'yyyy-MM-dd');
+      const newEndDate = addDays(endDate, -1);
+
+      setEndDate(newEndDate);
+      setTripDays(prevDays => prevDays - 1);
+
+      // Remove the specific day and shift subsequent days
+      const newSchedule = { ...schedule };
+      delete newSchedule[dateKeyToRemove];
+
+      // Shift all subsequent days back by one
+      Object.keys(newSchedule)
+        .sort()
+        .forEach(dateKey => {
+          if (new Date(dateKey) > dateToRemove) {
+            const prevDateKey = format(addDays(new Date(dateKey), -1), 'yyyy-MM-dd');
+            newSchedule[prevDateKey] = newSchedule[dateKey];
+            delete newSchedule[dateKey];
+          }
         });
-        setSelectedDate(startDate);
-        return newTripDays;
-      });
+
+      updateSchedule(newSchedule);
+
+      // If the selected date was removed or is after the removed date,
+      // update the selected date
+      if (selectedDate >= dateToRemove) {
+        setSelectedDate(addDays(selectedDate, -1));
+      }
     }
   };
 
@@ -486,6 +534,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                     const currentDate = new Date(date);
                     return currentDate >= startDate && currentDate <= endDate;
                   })
+                  .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime()) // Add sorting
                   .map(([date, daySchedule]) => (
                     <div key={date}>
                       <div className="flex items-center mb-1">
