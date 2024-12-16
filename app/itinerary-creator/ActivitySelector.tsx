@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useInView } from 'react-intersection-observer';
 import LazyImage from '@/components/LazyImage';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import ActivityDetailsDialog from './ActivityDetailsDialog';
 
 interface ActivitySelectorProps {
   cityData: City[];
@@ -178,52 +179,25 @@ export default function ActivitySelector({
       {activities.map(({ activity: item, category }, index) => (
         <Dialog key={`${item.id}-${index}`}>
           <DialogTrigger asChild>
-            <ActivityCard
-              item={item}
-              category={category}
-              onDragStart={(e: any) => handleDragStart(e, item, category)}
-              onDragEnd={handleDragEnd}
-              onClick={() => setSelectedActivity(item)}
-            />
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{item.name}</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <LazyImage
-                src={item.image}
-                alt={item.name}
-                className="w-full h-64 object-cover rounded mb-2"
+            <div> {/* Wrap in div to avoid dialog trigger issues */}
+              <ActivityCard
+                item={item}
+                category={category}
+                onDragStart={(e) => handleDragStart(e, item, category)}
+                onDragEnd={handleDragEnd}
+                onClick={() => setSelectedActivity(item)}
               />
-              <p className="font-semibold">{item.description}</p>
-              <p className="font-semibold">Location: {item.location}</p>
-              {item.price > 0 && (
-                <>
-                  <p className="font-semibold">Base Price: ${item.price.toFixed(2)}</p>
-                  <div className="flex items-center gap-4">
-                    <label htmlFor="guestCount" className="font-semibold">Number of Guests:</label>
-                    <Select onValueChange={(value) => setGuestCount(Number(value))}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select guests" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <p className="font-semibold">Total Price: ${(item.price * guestCount).toFixed(2)}</p>
-                </>
-              )}
-              <p className="font-semibold">Amenities: {item.amenities.join(', ')}</p>
-              <p className="font-semibold">Category: {category}</p>
-              {item.price === 0 && (
-                <p className="text-red-500">This activity cannot be added to the itinerary.</p>
-              )}
             </div>
-          </DialogContent>
+          </DialogTrigger>
+          <ActivityDetailsDialog
+            item={{
+              ...item,
+              images: item.images
+            }}
+            category={category}
+            guestCount={guestCount}
+            onGuestCountChange={setGuestCount}
+          />
         </Dialog>
       ))}
     </div>

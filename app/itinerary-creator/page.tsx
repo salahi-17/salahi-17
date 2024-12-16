@@ -9,10 +9,22 @@ export const dynamic = 'force-dynamic';
 
 export default async function ItineraryCreatorPage() {
   const session = await getServerSession(authOptions);
-  const activities = await prisma.activity.findMany();
   
+  // Fetch activities with related images
+  const activities = await prisma.activity.findMany({
+    include: {
+      images: true 
+    }
+  });
+  // Transform activities to convert Decimal to number and format images
+  const transformedActivities = activities.map(activity => ({
+    ...activity,
+    rating: activity.rating ? parseFloat(activity.rating.toString()) : null,
+    additionalImages: activity.images.map(img => img.url) // Extract image URLs
+  }));
+
   // TypeScript-friendly way to get unique categories
-  const categories = activities.reduce<string[]>((acc, activity) => {
+  const categories = transformedActivities.reduce<string[]>((acc, activity) => {
     if (!acc.includes(activity.category)) {
       acc.push(activity.category);
     }
@@ -20,8 +32,8 @@ export default async function ItineraryCreatorPage() {
   }, []);
 
   return (
-    <ClientTripPlanner 
-      initialCityData={activities}
+    <ClientTripPlanner
+      initialCityData={transformedActivities}
       categories={categories}
       isAuthenticated={!!session}
       userId={session?.user?.id}

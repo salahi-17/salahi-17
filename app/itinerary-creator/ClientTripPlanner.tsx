@@ -125,7 +125,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       acc[activity.location].categories[activity.category].push(activity);
       return acc;
     }, {} as Record<string, City>);
-
     setCityData(Object.values(groupedData));
   }, [initialCityData]);
 

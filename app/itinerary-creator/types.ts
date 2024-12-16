@@ -1,5 +1,7 @@
 // app/itinerary-creator/types.ts
 
+import { ActivityMedia } from "@prisma/client";
+
 export interface Activity {
   id: string;
   name: string;
@@ -9,6 +11,8 @@ export interface Activity {
   price: number;
   amenities: string[];
   image: string;
+  rating: number | null;
+  images: ActivityMedia[];
 }
 
 export interface ScheduleItem extends Activity {
