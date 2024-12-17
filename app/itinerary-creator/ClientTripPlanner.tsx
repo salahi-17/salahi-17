@@ -162,7 +162,11 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             createdAt: item.activity.createdAt,
             updatedAt: item.activity.updatedAt,
             type: item.activity.category,
-            guestCount: 1
+            guestCount: 1,
+            latitude: undefined,
+            longitude: undefined,
+            rating: null,
+            images: []
           };
 
           const timeSlot = getTimeSlotForOrder(item.order);

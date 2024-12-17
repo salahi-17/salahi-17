@@ -3,6 +3,8 @@
 import { ActivityMedia } from "@prisma/client";
 
 export interface Activity {
+  latitude: any;
+  longitude: any;
   id: string;
   name: string;
   category: string;
