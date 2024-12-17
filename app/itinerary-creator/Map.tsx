@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+import { Loader } from '@googlemaps/js-api-loader';
 
 interface MapProps {
   latitude: number | null;
@@ -8,22 +8,38 @@ interface MapProps {
   readonly?: boolean;
 }
 
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
+
 export default function Map({ latitude, longitude, onLocationSelect, readonly = true }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [marker, setMarker] = useState<google.maps.Marker | null>(null);
 
   useEffect(() => {
-    if (!mapRef.current) return;
-
     const initializeMap = async () => {
+      // Ensure the DOM element exists
+      const mapElement = mapRef.current;
+      if (!mapElement) return;
+
       try {
-        await loadGoogleMaps();
+        const loader = new Loader({
+          apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+          version: 'weekly',
+          libraries: ['places']
+        });
 
-        const lat = latitude || 0;
-        const lng = longitude || 0;
+        // Load the Maps JavaScript API
+        const google = await loader.load();
 
-        const mapInstance = new google.maps.Map(mapRef.current, {
+        const lat = latitude ?? 0;
+        const lng = longitude ?? 0;
+
+        // Create the map instance
+        const mapInstance = new google.maps.Map(mapElement, {
           center: { lat, lng },
           zoom: 15,
           mapTypeControl: false,
@@ -39,6 +55,7 @@ export default function Map({ latitude, longitude, onLocationSelect, readonly = 
           ]
         });
 
+        // Create the marker
         const markerInstance = new google.maps.Marker({
           position: { lat, lng },
           map: mapInstance,
@@ -46,7 +63,7 @@ export default function Map({ latitude, longitude, onLocationSelect, readonly = 
         });
 
         if (!readonly && onLocationSelect) {
-          // Add click listener to map
+          // Map click handler
           mapInstance.addListener('click', (e: google.maps.MapMouseEvent) => {
             const latLng = e.latLng;
             if (latLng) {
@@ -55,7 +72,7 @@ export default function Map({ latitude, longitude, onLocationSelect, readonly = 
             }
           });
 
-          // Add drag end listener to marker
+          // Marker drag handler
           markerInstance.addListener('dragend', () => {
             const position = markerInstance.getPosition();
             if (position) {
@@ -66,13 +83,15 @@ export default function Map({ latitude, longitude, onLocationSelect, readonly = 
 
         setMap(mapInstance);
         setMarker(markerInstance);
+
       } catch (error) {
-        console.error('Failed to load Google Maps:', error);
+        console.error('Error loading Google Maps:', error);
       }
     };
 
     initializeMap();
 
+    // Cleanup function
     return () => {
       if (marker) {
         marker.setMap(null);
@@ -80,20 +99,20 @@ export default function Map({ latitude, longitude, onLocationSelect, readonly = 
       setMap(null);
       setMarker(null);
     };
-  }, [mapRef]);
+  }, []); // Empty dependency array as we handle updates in a separate effect
 
   // Update marker position when coordinates change
   useEffect(() => {
-    if (marker && latitude && longitude) {
+    if (marker && map && latitude != null && longitude != null) {
       const position = new google.maps.LatLng(latitude, longitude);
       marker.setPosition(position);
-      map?.setCenter(position);
+      map.setCenter(position);
     }
   }, [latitude, longitude, marker, map]);
 
   return (
-    <div 
-      ref={mapRef} 
+    <div
+      ref={mapRef}
       className="w-full h-full rounded-lg"
       style={{ minHeight: '200px' }}
     />

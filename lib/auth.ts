@@ -39,10 +39,12 @@ export const authOptions: NextAuthOptions = {
           }
         });
 
-        if (!user) {
+        // If no user found or if it's a guest user
+        if (!user || !user.password) {
           return null;
         }
 
+        // Now we know password exists, we can safely compare
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password

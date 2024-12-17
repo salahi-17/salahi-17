@@ -14,8 +14,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MediaType } from "@prisma/client";
 
-interface Activity {
+interface Media {
+  id: string;
+  url: string;
+  type: MediaType;
+}
+
+export interface Activity {
   id: string;
   name: string;
   category: string;
@@ -24,6 +31,10 @@ interface Activity {
   price: number;
   amenities: string[];
   image: string;
+  images: Media[];
+  rating: number;
+  latitude: number;
+  longitude: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -21,7 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Prisma } from '@prisma/client';
+import { Prisma, OrderStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +44,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         { id: { contains: search, mode: 'insensitive' } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
         { planName: { contains: search, mode: 'insensitive' } },
-        { status: { contains: search, mode: 'insensitive' } },
+        { status: { equals: search as OrderStatus } },
       ],
     };
   }

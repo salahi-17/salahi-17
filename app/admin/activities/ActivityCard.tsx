@@ -3,23 +3,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-interface Activity {
-  id: string;
-  name: string;
-  category: string;
-  location: string;
-  description: string;
-  price: number;
-  amenities: string[];
-  image: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Activity } from "./page";
 
 interface ActivityCardProps {
+
   activity: Activity;
+
   onEdit: (activity: Activity) => void;
+
   onDelete: (id: string) => void;
+
 }
 
 export default function ActivityCard({ activity, onEdit, onDelete }: ActivityCardProps) {
