@@ -730,6 +730,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           <ScheduleView
             selectedDate={selectedDate}
             startDate={startDate}
+            endDate={endDate}
             schedule={schedule}
             updateSchedule={updateSchedule}
             planName={planName}
@@ -738,7 +739,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             activeTab={activeTab}
           />
 
-<div className="flex-1">
+    <div className="flex-1">
           {view === 'list' ? (
             <ActivitySelector
               cityData={cityData}
