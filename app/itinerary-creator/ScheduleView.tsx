@@ -63,6 +63,12 @@ export default function ScheduleView({
   activeTab = 'hotels'
 }: ScheduleViewProps) {
   const timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
+  const [currentDate, setCurrentDate] = useState<DateRange>({
+    from: startDate,
+    to: startDate
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [currentHotel, setCurrentHotel] = useState<string | null>(null);
 
   // In ScheduleView component
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, timeSlot: string) => {
@@ -151,12 +157,6 @@ export default function ScheduleView({
   };
 
   if (activeTab === 'hotels') {
-  const [currentDate, setCurrentDate] = useState<DateRange>({
-    from: startDate,
-    to: startDate
-  });
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [currentHotel, setCurrentHotel] = useState<string | null>(null);
 
   const handleHotelDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
