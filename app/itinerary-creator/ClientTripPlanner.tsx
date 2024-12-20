@@ -17,6 +17,8 @@ import CheckoutButton from './CheckoutButton';
 import { City, Schedule, Activity, CityCategories, ScheduleItem } from './types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LazyImage from '@/components/LazyImage';
+import { List, MapIcon } from 'lucide-react';
+import MapView from './MapView';
 
 interface ClientTripPlannerProps {
   initialCityData: Activity[];
@@ -43,7 +45,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'hotels' | 'activities'>('hotels');
-
+  const [view, setView] = useState<'list' | 'map'>('list');
   const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -694,13 +696,34 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <div className="p-4 bg-white ">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')}>
-            <TabsList className="grid w-[400px] grid-cols-2">
-              <TabsTrigger value="hotels">Hotels</TabsTrigger>
-              <TabsTrigger value="activities">Activities</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <div className="p-4 bg-white">
+          <div className="flex justify-between items-center">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')}>
+              <TabsList className="grid w-[400px] grid-cols-2">
+                <TabsTrigger value="hotels">Hotels</TabsTrigger>
+                <TabsTrigger value="activities">Activities</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="flex gap-2">
+              <Button
+                variant={view === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('list')}
+              >
+                <List className="h-4 w-4 mr-2" />
+                List View
+              </Button>
+              <Button
+                variant={view === 'map' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('map')}
+              >
+                <MapIcon className="h-4 w-4 mr-2" />
+                Map View
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
@@ -715,18 +738,38 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             activeTab={activeTab}
           />
 
-          <ActivitySelector
-            cityData={cityData}
-            schedule={schedule}
-            activeTab={activeTab}
-            startDate={startDate}
-            endDate={endDate}
-            categories={categories}
-            onDateChange={(start, end) => {
-              setStartDate(start);
-              setEndDate(end);
-            }}
-          />
+<div className="flex-1">
+          {view === 'list' ? (
+            <ActivitySelector
+              cityData={cityData}
+              schedule={schedule}
+              activeTab={activeTab}
+              startDate={startDate}
+              endDate={endDate}
+              categories={categories}
+              onDateChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
+            />
+          ) : (
+              <MapView
+                cityData={cityData}
+                activeTab={activeTab}
+                selectedCity={selectedCity}
+                selectedCategory={selectedCategory}
+                onCityChange={(value) => {
+                  if (value === 'All') {
+                    setSelectedCity('All');
+                  } else {
+                    const found = cityData.find(city => city.name === value);
+                    setSelectedCity(found || 'All');
+                  }
+                }}
+                onCategoryChange={setSelectedCategory}
+              />
+            )}
+            </div>
         </div>
       </div>
     </div>

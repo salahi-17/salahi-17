@@ -28,9 +28,9 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
     const isHotel = category.toLowerCase() === 'hotel';
     return (
         <DialogContent className="max-w-7xl p-0">
-            <div className="flex flex-col h-[90vh] overflow-hidden">
+            <div className="flex flex-col h-[90vh] overflow-hidden rounded-xl border ">
                 {/* Gallery Section */}
-                <div className="h-[50vh] bg-gray-100">
+                <div className="h-[50vh] bg-gray-100 ">
                     <ImageGallery
                         mainImage={item.image}
                         mediaItems={item.images} // This will now include all images including the main one
@@ -44,7 +44,7 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex justify-between items-start">
-                                <div>
+                                <div className="space-y-2 w-[70%]">
                                     <h2 className="text-2xl font-semibold mb-2">{item.name}</h2>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center text-gray-500">
@@ -59,26 +59,31 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                         )}
                                         <Badge>{category}</Badge>
                                     </div>
+                                    <p className="text-gray-600">{item.description}</p>
+                                    {/* Amenities */}
+                                    <div>
+                                        <h3 className="font-semibold mb-3">Amenities</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {item.amenities.map((amenity, idx) => (
+                                                <Badge key={idx} variant="outline">
+                                                    {amenity}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
+                                {/* Map */}
+                                {item.latitude && item.longitude && (
+                                    <div className="h-[200px] w-[30%] rounded-lg overflow-hidden">
+                                        <MapWithNoSSR
+                                            latitude={item.latitude}
+                                            longitude={item.longitude}
+                                            onLocationSelect={() => { }}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
-                            {/* About */}
-                            <div>
-                                <h3 className="font-semibold mb-2">About</h3>
-                                <p className="text-gray-600">{item.description}</p>
-                            </div>
-
-                            {/* Amenities */}
-                            <div>
-                                <h3 className="font-semibold mb-3">Amenities</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {item.amenities.map((amenity, idx) => (
-                                        <Badge key={idx} variant="outline">
-                                            {amenity}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -116,22 +121,8 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                     <span>Total</span>
                                     <span className="font-semibold">${(item.price * guestCount).toFixed(2)}</span>
                                 </div>
-                                <Button className="w-full">Reserve now</Button>
                             </div>
 
-                            {/* Map */}
-                            {item.latitude && item.longitude && (
-                                <div className="pt-4">
-                                    <h3 className="font-semibold mb-2">Location</h3>
-                                    <div className="h-[200px] rounded-lg overflow-hidden">
-                                        <MapWithNoSSR
-                                            latitude={item.latitude}
-                                            longitude={item.longitude}
-                                            onLocationSelect={() => { }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

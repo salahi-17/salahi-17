@@ -158,6 +158,7 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
           latitude={latitude}
           longitude={longitude}
           onLocationSelect={(lat, lng) => {
+            console.log(lat, lng)
             setLatitude(lat);
             setLongitude(lng);
           }}
