@@ -4,9 +4,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://merchant.revolut.com/api/orders' 
-  : 'https://sandbox-merchant.revolut.com/api/orders';
+const API_URL = 
+// process.env.NODE_ENV === 'production' 
+//   ? 'https://merchant.revolut.com/api/orders' : 
+  'https://sandbox-merchant.revolut.com/api/orders';
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);

@@ -760,7 +760,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <div className="p-4 bg-white">
           <div className="flex justify-between items-center">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')}>
-              <TabsList className="grid w-[400px] grid-cols-2">
+              <TabsList className="grid w-[400px] grid-cols-2 bg-primary opacity-80 text-neutral">
                 <TabsTrigger value="hotels">Hotels</TabsTrigger>
                 <TabsTrigger value="activities">Activities</TabsTrigger>
               </TabsList>

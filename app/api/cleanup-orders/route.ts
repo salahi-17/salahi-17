@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { subMinutes } from 'date-fns';
 
-const REVOLUT_API_URL = process.env.NODE_ENV === 'production' ? 'https://merchant.revolut.com/api/orders' : 'https://sandbox-merchant.revolut.com/api/orders';
+const REVOLUT_API_URL = 
+// process.env.NODE_ENV === 'production' ? 'https://merchant.revolut.com/api/orders' : 
+'https://sandbox-merchant.revolut.com/api/orders';
 
 
 async function cancelRevolutOrder(revolutOrderId: string) {
