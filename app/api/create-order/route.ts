@@ -4,21 +4,38 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://merchant.revolut.com/api/orders' : 'https://sandbox-merchant.revolut.com/api/orders';
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://merchant.revolut.com/api/orders' 
+  : 'https://sandbox-merchant.revolut.com/api/orders';
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
-
-    if (!session || !session.user || !session.user.email) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { amount, currency, schedule } = await req.json();
+    const { amount, currency, schedule, guestEmail } = await req.json();
 
     try {
-        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        let user;
+
+        if (session?.user?.email) {
+            // Handle logged-in user
+            user = await prisma.user.findUnique({ 
+                where: { email: session.user.email } 
+            });
+            if (!user) {
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            }
+        } else if (guestEmail) {
+            // Handle guest user
+            user = await prisma.user.upsert({
+                where: { email: guestEmail },
+                update: {}, // No updates needed if user exists
+                create: {
+                    email: guestEmail,
+                    isGuest: true,
+                    name: `Guest-${Date.now()}` // Optional: create a temporary name
+                },
+            });
+        } else {
+            return NextResponse.json({ error: 'Email required' }, { status: 400 });
         }
 
         // Create the itinerary
@@ -63,6 +80,7 @@ export async function POST(req: Request) {
                 merchant_order_ext_ref: itinerary.id,
                 metadata: {
                     itineraryId: itinerary.id,
+                    isGuest: user.isGuest
                 },
                 merchant_order_data: {
                     url: `${process.env.NEXT_PUBLIC_BASE_URL}/profile/my-orders`,
@@ -85,11 +103,36 @@ export async function POST(req: Request) {
                 amount,
                 currency,
                 planName: schedule.name,
-                schedule: JSON.stringify({ ...schedule, itineraryId: itinerary.id }),
+                schedule: JSON.stringify({ 
+                    ...schedule, 
+                    itineraryId: itinerary.id,
+                    isGuest: user.isGuest 
+                }),
                 status: 'PENDING',
                 userId: user.id,
             },
         });
+
+        // Delete old itineraries for guest users to keep the database clean
+        if (user.isGuest) {
+            const oldItineraries = await prisma.itinerary.findMany({
+                where: {
+                    userId: user.id,
+                    id: { not: itinerary.id },
+                    createdAt: {
+                        lt: new Date(Date.now() - 24 * 60 * 60 * 1000) // Older than 24 hours
+                    }
+                }
+            });
+
+            if (oldItineraries.length > 0) {
+                await prisma.itinerary.deleteMany({
+                    where: {
+                        id: { in: oldItineraries.map(i => i.id) }
+                    }
+                });
+            }
+        }
 
         return NextResponse.json({
             orderId: order.id,
@@ -99,9 +142,15 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('Error creating order:', error);
         if (error instanceof Error) {
-            return NextResponse.json({ error: 'Failed to create order', details: error.message }, { status: 500 });
+            return NextResponse.json({ 
+                error: 'Failed to create order', 
+                details: error.message 
+            }, { status: 500 });
         } else {
-            return NextResponse.json({ error: 'Failed to create order', details: 'An unknown error occurred' }, { status: 500 });
+            return NextResponse.json({ 
+                error: 'Failed to create order', 
+                details: 'An unknown error occurred' 
+            }, { status: 500 });
         }
     }
 }

@@ -1,9 +1,11 @@
-import React from 'react';
+// components/CheckoutButton.tsx
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
+import CheckoutAuthDialog from '@/components/CheckoutAuthDialog';
 
 interface CheckoutButtonProps {
   totalPrice: number;
@@ -17,25 +19,16 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
   const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
 
-  const handleCheckout = async () => {
-    if (!session) {
-      toast({
-        title: "Please sign in",
-        description: "You need to sign in to checkout.",
-        duration: 3000,
-      });
-      router.push('/auth/signin');
-      return;
-    }
-
+  const handleCheckout = async (guestEmail?: string) => {
     const formattedSchedule = {
       name: planName,
       startDate: format(startDate, 'yyyy-MM-dd'),
       endDate: format(endDate, 'yyyy-MM-dd'),
       days: Object.entries(schedule).map(([date, daySchedule]) => ({
         date,
-        items: Object.entries(daySchedule).flatMap(([timeSlot, activities]) => 
+        items: Object.entries(daySchedule).flatMap(([timeSlot, activities]) =>
           activities.map((activity: any, index: number) => ({
             activityId: activity.id,
             order: getOrderForTimeSlot(timeSlot) + index,
@@ -52,9 +45,10 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: Math.round(totalPrice * 100), // Convert to cents
-          currency: 'USD', // Adjust as needed
+          amount: Math.round(totalPrice * 100),
+          currency: 'USD',
           schedule: formattedSchedule,
+          guestEmail // Add this for guest checkout
         }),
       });
 
@@ -64,12 +58,8 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
       }
 
       const { orderId, itineraryId, checkoutUrl } = await response.json();
-
-      // Save the orderId and itineraryId in localStorage for later use
       localStorage.setItem('pendingOrderId', orderId);
       localStorage.setItem('currentItineraryId', itineraryId);
-
-      // Redirect to Revolut checkout page
       window.location.href = checkoutUrl;
     } catch (error) {
       console.error('Error creating order:', error);
@@ -92,9 +82,25 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
     }
   };
 
+  const handleClick = () => {
+    if (session) {
+      handleCheckout();
+    } else {
+      setIsAuthDialogOpen(true);
+    }
+  };
+
   return (
-    <Button onClick={handleCheckout} disabled={totalPrice === 0}>
-      Checkout
-    </Button>
+    <>
+      <Button onClick={handleClick} disabled={totalPrice === 0}>
+        Checkout
+      </Button>
+
+      <CheckoutAuthDialog
+        isOpen={isAuthDialogOpen}
+        onClose={() => setIsAuthDialogOpen(false)}
+        onGuestCheckout={(email) => handleCheckout(email)}
+      />
+    </>
   );
 }

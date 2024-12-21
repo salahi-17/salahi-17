@@ -700,8 +700,18 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <div className="flex-1 overflow-hidden flex flex-col ">
           <div className="p-4 flex items-center justify-between">
             <h2 className="font-semibold">Trip Days</h2>
+            
+          </div>
+          <div className="flex-1 px-4 ">
+            <DaySelector
+              tripDays={tripDays}
+              startDate={startDate}
+              selectedDate={selectedDate}
+              handleDaySelect={handleDaySelect}
+              removeDay={removeDay}
+            />
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
               onClick={() => {
                 const newEndDate = addDays(endDate, 1);
@@ -719,24 +729,15 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                     Evening: [],
                     Night: []
                   }
-                };
+                }
                 updateSchedule(newSchedule);
               }}
-              className="text-blue-600"
+              className=" mt-3 w-full"
             >
               <PlusIcon className="h-4 w-4 mr-1" />
               Add Day
             </Button>
           </div>
-          <ScrollArea className="flex-1 px-4 ">
-            <DaySelector
-              tripDays={tripDays}
-              startDate={startDate}
-              selectedDate={selectedDate}
-              handleDaySelect={handleDaySelect}
-              removeDay={removeDay}
-            />
-          </ScrollArea>
         </div>
 
         {/* Total Price and Checkout */}

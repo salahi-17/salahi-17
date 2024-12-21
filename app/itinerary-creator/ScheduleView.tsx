@@ -450,19 +450,19 @@ export default function ScheduleView({
 
         <div className="flex-1 overflow-auto p-4">
           <div
-            className="border-2 border-dashed border-gray-300 rounded-lg min-h-[200px] space-y-4 p-4"
+            className="border-2 border-dashed border-gray-300 rounded-lg  min-h-[120px] space-y-4 p-2"
             onDrop={handleHotelDrop}
             onDragOver={(e) => e.preventDefault()}
           >
             {hotelBookings.length > 0 ? (
               hotelBookings.map((booking) => (
-                <div key={booking.hotelId} className="relative rounded-lg overflow-hidden bg-white shadow-md">
+                <div key={booking.hotelId} className="relative rounded overflow-hidden bg-white shadow-md">
                   <LazyImage
                     src={booking.hotel.image}
                     alt={booking.hotel.name}
                     className="w-full h-24 object-cover"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-3">
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between p-2">
                     <div className="flex justify-between items-start">
                       <span className="text-white font-medium">{booking.hotel.name}</span>
                       <Button
