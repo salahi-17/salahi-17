@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { format, addDays, differenceInDays, parse, eachDayOfInterval } from "date-fns";
+import { format, addDays, differenceInDays, parse, eachDayOfInterval, startOfDay, isAfter, isBefore } from "date-fns";
 import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ interface ClientTripPlannerProps {
 type TimeSlot = 'Accommodation' | 'Morning' | 'Afternoon' | 'Evening' | 'Night';
 
 export default function ClientTripPlanner({ initialCityData, categories }: ClientTripPlannerProps) {
-  const today = new Date();
+  const today = startOfDay(new Date());
   const tomorrow = addDays(today, 1);
 
   const [startDate, setStartDate] = useState<Date>(today);
@@ -289,31 +289,62 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   };
 
   const handleStartDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setStartDate(date);
-      setSelectedDate(date);
-      const newEndDate = endDate < date ? date : endDate;
+    if (!date) return;
+
+    const selectedStartDate = startOfDay(date);
+    const currentStartDate = startOfDay(startDate);
+
+    // Calculate the difference in days to shift the schedule
+    const daysDifference = differenceInDays(selectedStartDate, currentStartDate);
+
+    // If new start date is after current end date, adjust end date
+    if (isAfter(selectedStartDate, endDate)) {
+      const newEndDate = selectedStartDate;
       setEndDate(newEndDate);
-      const days = differenceInDays(newEndDate, date) + 1;
+      setTripDays(1);
+
+      // Shift schedule to new date
+      const newSchedule: Schedule = {};
+      const newDateKey = format(selectedStartDate, 'yyyy-MM-dd');
+
+      // Preserve only the first day's data if it exists
+      if (Object.keys(schedule).length > 0) {
+        const firstDayData = Object.values(schedule)[0];
+        newSchedule[newDateKey] = firstDayData;
+      } else {
+        newSchedule[newDateKey] = {
+          Accommodation: [],
+          Morning: [],
+          Afternoon: [],
+          Evening: [],
+          Night: []
+        };
+      }
+
+      updateSchedule(newSchedule);
+    } else {
+      // Keep current end date but shift all schedule items
+      const days = differenceInDays(endDate, selectedStartDate) + 1;
       setTripDays(days);
-      initializeSchedule(date, newEndDate); // This will create new empty slots for all dates
-    }
-  };
 
-  const handleEndDateSelect = (date: Date | undefined) => {
-    if (date && date >= startDate) {
-      setEndDate(date);
-      const days = differenceInDays(date, startDate) + 1;
-      setTripDays(days);
+      // Create new schedule with shifted dates
+      const newSchedule: Schedule = {};
 
-      // Initialize schedule for the new date range while preserving existing data
-      const newSchedule = { ...schedule };
-      const currentDateKeys = Object.keys(newSchedule);
+      Object.entries(schedule).forEach(([dateKey, daySchedule]) => {
+        const currentDate = new Date(dateKey);
+        const newDate = addDays(currentDate, daysDifference);
+        const newDateKey = format(newDate, 'yyyy-MM-dd');
 
-      // Add new dates
-      for (let i = 0; i < days; i++) {
-        const currentDate = addDays(startDate, i);
-        const dateKey = format(currentDate, 'yyyy-MM-dd');
+        // Only keep data that falls within the new date range
+        if (!isBefore(newDate, selectedStartDate) && !isAfter(newDate, endDate)) {
+          newSchedule[newDateKey] = daySchedule;
+        }
+      });
+
+      // Add empty slots for any new dates without data
+      const dateRange = eachDayOfInterval({ start: selectedStartDate, end: endDate });
+      dateRange.forEach(date => {
+        const dateKey = format(date, 'yyyy-MM-dd');
         if (!newSchedule[dateKey]) {
           newSchedule[dateKey] = {
             Accommodation: [],
@@ -323,37 +354,61 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             Night: []
           };
         }
-      }
-
-      // Remove dates outside the new range
-      Object.keys(newSchedule).forEach(dateKey => {
-        const currentDate = new Date(dateKey);
-        if (currentDate < startDate || currentDate > date) {
-          delete newSchedule[dateKey];
-        }
       });
 
       updateSchedule(newSchedule);
     }
+
+    setStartDate(selectedStartDate);
+    setSelectedDate(selectedStartDate);
   };
 
-  const addDay = () => {
-    const newEndDate = addDays(endDate, 1);
-    setEndDate(newEndDate);
-    setTripDays(prevDays => prevDays + 1);
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (!date) return;
 
-    // Add new date to schedule
-    const newDateKey = format(newEndDate, 'yyyy-MM-dd');
-    const newSchedule = {
-      ...schedule,
-      [newDateKey]: {
-        Accommodation: [],
-        Morning: [],
-        Afternoon: [],
-        Evening: [],
-        Night: []
+    const selectedEndDate = startOfDay(date);
+
+    // Validate end date is not before start date
+    if (isBefore(selectedEndDate, startDate)) {
+      toast({
+        title: "Invalid date selection",
+        description: "End date cannot be before start date",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEndDate(selectedEndDate);
+    const days = differenceInDays(selectedEndDate, startDate) + 1;
+    setTripDays(days);
+
+    // Create new schedule preserving existing data
+    const newSchedule: Schedule = { ...schedule };
+
+    // Add empty slots for new dates
+    const dateRange = eachDayOfInterval({ start: startDate, end: selectedEndDate });
+    dateRange.forEach(date => {
+      const dateKey = format(date, 'yyyy-MM-dd');
+      if (!newSchedule[dateKey]) {
+        newSchedule[dateKey] = {
+          Accommodation: [],
+          Morning: [],
+          Afternoon: [],
+          Evening: [],
+          Night: []
+        };
       }
-    };
+    });
+
+    // Remove only dates that are now out of range
+    Object.keys(newSchedule).forEach(dateKey => {
+      const currentDate = new Date(dateKey);
+      if (currentDate < startDate || currentDate > selectedEndDate) {
+        delete newSchedule[dateKey];
+      }
+    });
+
     updateSchedule(newSchedule);
   };
 
@@ -516,75 +571,79 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       {/* Left Panel */}
       <div className="w-64 bg-white flex flex-col ">
         {/* Itinerary Status/List */}
-        <div className="p-4">
-          {activeTab === 'hotels' ? (
-            // Hotels List
-            <div className="space-y-2">
-              {Object.entries(schedule).some(([_, day]) => day.Accommodation.length > 0) ? (
-                Object.entries(schedule).map(([date, day]) => (
-                  day.Accommodation.map((hotel, index) => (
-                    <div
-                      key={`${hotel.id}-${index}`}
-                      className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{hotel.name}</p>
-                          <p className="text-xs text-gray-500">
-                            Day {differenceInDays(new Date(date), startDate) + 1}
-                          </p>
-                        </div>
-                        <p className="text-sm font-medium">${hotel.price.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))
-                ))
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-gray-500 text-sm">
-                    No hotels selected
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            // Activities List
-            <div className="space-y-2">
-              {Object.entries(schedule).some(([_, day]) =>
-                ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
-                  day[timeSlot].length > 0
-                )
-              ) ? (
-                Object.entries(schedule).map(([date, day]) => (
-                  ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
-                    day[timeSlot].map((activity, index) => (
+        <div className="p-4 max-h-[296px]"> {/* Fixed height to show approximately 3 items */}
+          <ScrollArea className="h-full pr-4">
+            {activeTab === 'hotels' ? (
+              // Hotels List
+              <div className="space-y-2">
+                {Object.entries(schedule).some(([_, day]) => day.Accommodation.length > 0) ? (
+                  Object.entries(schedule).map(([date, day]) => (
+                    day.Accommodation.map((hotel, index) => (
                       <div
-                        key={`${activity.id}-${timeSlot}-${index}`}
+                        key={`${hotel.id}-${index}`}
                         className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium">{activity.name}</p>
+                            <p className="text-sm font-medium">{hotel.name}</p>
                             <p className="text-xs text-gray-500">
-                              Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
+                              Day {differenceInDays(new Date(date), startDate) + 1}
                             </p>
                           </div>
-                          <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
+                          <p className="text-sm font-medium">${hotel.price.toFixed(2)}</p>
                         </div>
                       </div>
                     ))
                   ))
-                ))
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-gray-500 text-sm">
-                    No activities selected
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-gray-500 text-sm">
+                      No hotels selected. Please book a hotel first.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Activities List
+              <div className="space-y-2">
+                {Object.entries(schedule).some(([_, day]) =>
+                  ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
+                    day[timeSlot].length > 0
+                  )
+                ) ? (
+                  Object.entries(schedule).map(([date, day]) => (
+                    ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
+                      day[timeSlot].map((activity, index) => (
+                        <div
+                          key={`${activity.id}-${timeSlot}-${index}`}
+                          className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium">{activity.name}</p>
+                              <p className="text-xs text-gray-500">
+                                Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
+                              </p>
+                            </div>
+                            <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))
+                    ))
+                  ))
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-gray-500 text-sm">
+                      No activities selected
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            <ScrollBar />
+          </ScrollArea>
         </div>
+
         {/* Date Selection */}
         <div className="p-4">
           <div className="space-y-4">
@@ -604,7 +663,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                   <Calendar
                     mode="single"
                     selected={startDate}
-                    onSelect={(date) => date && setStartDate(date)}
+                    onSelect={handleStartDateSelect}
+                    disabled={(date) => date < startOfDay(today)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -626,7 +686,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                   <Calendar
                     mode="single"
                     selected={endDate}
-                    onSelect={(date) => date && setEndDate(date)}
+                    onSelect={handleEndDateSelect}
                     disabled={(date) => date < startDate}
                     initialFocus
                   />
@@ -637,7 +697,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         </div>
 
         {/* Days Section */}
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col ">
           <div className="p-4 flex items-center justify-between">
             <h2 className="font-semibold">Trip Days</h2>
             <Button
@@ -668,7 +728,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               Add Day
             </Button>
           </div>
-          <ScrollArea className="flex-1 px-4">
+          <ScrollArea className="flex-1 px-4 ">
             <DaySelector
               tripDays={tripDays}
               startDate={startDate}
@@ -739,21 +799,21 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
             activeTab={activeTab}
           />
 
-    <div className="flex-1">
-          {view === 'list' ? (
-            <ActivitySelector
-              cityData={cityData}
-              schedule={schedule}
-              activeTab={activeTab}
-              startDate={startDate}
-              endDate={endDate}
-              categories={categories}
-              onDateChange={(start, end) => {
-                setStartDate(start);
-                setEndDate(end);
-              }}
-            />
-          ) : (
+          <div className="flex-1">
+            {view === 'list' ? (
+              <ActivitySelector
+                cityData={cityData}
+                schedule={schedule}
+                activeTab={activeTab}
+                startDate={startDate}
+                endDate={endDate}
+                categories={categories}
+                onDateChange={(start, end) => {
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+              />
+            ) : (
               <MapView
                 cityData={cityData}
                 activeTab={activeTab}
@@ -770,7 +830,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                 onCategoryChange={setSelectedCategory}
               />
             )}
-            </div>
+          </div>
         </div>
       </div>
     </div>

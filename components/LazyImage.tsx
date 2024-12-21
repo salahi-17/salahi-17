@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Skeleton } from "@/components/ui/skeleton"; // You'll need to add this UI component
+// LazyImage.tsx
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface LazyImageProps {
   src: string;
@@ -7,49 +8,52 @@ interface LazyImageProps {
   className?: string;
 }
 
-export default function LazyImage({ src, alt, className }: LazyImageProps) {
-  const [isLoading, setIsLoading] = useState(true);
+const LazyImage: React.FC<LazyImageProps> = ({ src, alt, className }) => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadImage = async () => {
       try {
-        // Check cache first
-        const cachedImage = localStorage.getItem(`img_cache_${src}`);
+        const cachedImage = localStorage.getItem(src);
         if (cachedImage) {
           if (isMounted) {
             setImageSrc(cachedImage);
-            setIsLoading(false);
+            setLoading(false);
           }
           return;
         }
 
-        // Load image
         const response = await fetch(src);
         const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        
-        if (isMounted) {
-          setImageSrc(objectUrl);
-          setIsLoading(false);
-          
-          // Cache the image
-          try {
-            localStorage.setItem(`img_cache_${src}`, objectUrl);
-          } catch (error) {
-            console.warn('Failed to cache image:', error);
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          if (isMounted) {
+            const base64data = reader.result as string;
+            setImageSrc(base64data);
+            setLoading(false);
+            try {
+              localStorage.setItem(src, base64data);
+            } catch (error) {
+              console.warn('Failed to cache image:', error);
+            }
           }
-        }
+        };
+
+        reader.readAsDataURL(blob);
       } catch (error) {
         console.error('Error loading image:', error);
         if (isMounted) {
-          setIsLoading(false);
+          setImageSrc(src); // Fallback to original source
+          setLoading(false);
         }
       }
     };
 
+    setLoading(true);
     loadImage();
 
     return () => {
@@ -57,8 +61,8 @@ export default function LazyImage({ src, alt, className }: LazyImageProps) {
     };
   }, [src]);
 
-  if (isLoading) {
-    return <Skeleton className={className} />;
+  if (loading) {
+    return <div className={`${className} bg-gray-200 animate-pulse`} />;
   }
 
   return (
@@ -69,4 +73,6 @@ export default function LazyImage({ src, alt, className }: LazyImageProps) {
       loading="lazy"
     />
   );
-}
+};
+
+export default React.memo(LazyImage);
