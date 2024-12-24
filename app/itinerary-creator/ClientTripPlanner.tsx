@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LazyImage from '@/components/LazyImage';
 import { List, MapIcon } from 'lucide-react';
 import MapView from './MapView';
+import { TourGuide } from './TourGuide';
 
 interface ClientTripPlannerProps {
   initialCityData: Activity[];
@@ -507,7 +508,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           tripDays,
           schedule: newSchedule,
         };
-        
+
         try {
           localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
         } catch (error: any) {
@@ -515,7 +516,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
             // Clear any old itineraries
             localStorage.removeItem('unsavedItinerary');
-            
+
             // Try saving again
             try {
               localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
@@ -682,273 +683,276 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   };
 
   return (
-    <div className="flex h-[calc(100vh-130px)] w-full bg-gray-100">
-      {/* Left Panel */}
-      <div className="w-64 bg-white flex flex-col ">
-        {/* Itinerary Status/List */}
-        <div className="p-4 max-h-[296px]"> {/* Fixed height to show approximately 3 items */}
-          <ScrollArea className="h-full pr-4">
-            {activeTab === 'hotels' ? (
-              <div className="space-y-2">
-                {Object.keys(hotelDateRanges).length > 0 ? (
-                  Object.values(hotelDateRanges).map(({ hotel, startDate, endDate }) => (
-                    <div
-                      key={hotel.id}
-                      className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{hotel.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {format(startDate, 'MMM dd')}
-                            {!isSameDay(startDate, endDate) && ` - ${format(endDate, 'MMM dd')}`}
+    <>
+      <TourGuide />
+      <div className="flex h-[calc(100vh-130px)] w-full bg-gray-100">
+        {/* Left Panel */}
+        <div className="w-64 bg-white flex flex-col ">
+          {/* Itinerary Status/List */}
+          <div className="p-4 max-h-[296px]"> {/* Fixed height to show approximately 3 items */}
+            <ScrollArea className="h-full pr-4">
+              {activeTab === 'hotels' ? (
+                <div className="space-y-2">
+                  {Object.keys(hotelDateRanges).length > 0 ? (
+                    Object.values(hotelDateRanges).map(({ hotel, startDate, endDate }) => (
+                      <div
+                        key={hotel.id}
+                        className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">{hotel.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {format(startDate, 'MMM dd')}
+                              {!isSameDay(startDate, endDate) && ` - ${format(endDate, 'MMM dd')}`}
+                            </p>
+                          </div>
+                          <p className="text-sm font-medium">
+                            ${(hotel.price * differenceInDays(addDays(endDate, 1), startDate)).toFixed(2)}
                           </p>
                         </div>
-                        <p className="text-sm font-medium">
-                          ${(hotel.price * differenceInDays(addDays(endDate, 1), startDate)).toFixed(2)}
-                        </p>
                       </div>
+                    ))
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-gray-500 text-sm">
+                        No hotels selected. Please book a hotel first.
+                      </p>
                     </div>
-                  ))
-                ) : (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-gray-500 text-sm">
-                      No hotels selected. Please book a hotel first.
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Activities List
-              <div className="space-y-2">
-                {Object.entries(schedule).some(([_, day]) =>
-                  ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
-                    day[timeSlot].length > 0
-                  )
-                ) ? (
-                  Object.entries(schedule).map(([date, day]) => (
-                    ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
-                      day[timeSlot].map((activity, index) => (
-                        <div
-                          key={`${activity.id}-${timeSlot}-${index}`}
-                          className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium">{activity.name}</p>
-                              <p className="text-xs text-gray-500">
-                                Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
-                              </p>
+                  )}
+                </div>
+              ) : (
+                // Activities List
+                <div className="space-y-2">
+                  {Object.entries(schedule).some(([_, day]) =>
+                    ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
+                      day[timeSlot].length > 0
+                    )
+                  ) ? (
+                    Object.entries(schedule).map(([date, day]) => (
+                      ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
+                        day[timeSlot].map((activity, index) => (
+                          <div
+                            key={`${activity.id}-${timeSlot}-${index}`}
+                            className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium">{activity.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
+                                </p>
+                              </div>
+                              <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
                             </div>
-                            <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
                           </div>
-                        </div>
+                        ))
                       ))
                     ))
-                  ))
-                ) : (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-gray-500 text-sm">
-                      No activities selected
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-gray-500 text-sm">
+                        No activities selected
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              <ScrollBar />
+            </ScrollArea>
+          </div>
+
+          {/* Date Selection */}
+          <div className="p-4">
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-600 mb-2 block">Trip Start Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(startDate, "MMM dd, yyyy")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={handleStartDateSelect}
+                      disabled={(date) => date < startOfDay(today)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
-            )}
-            <ScrollBar />
-          </ScrollArea>
-        </div>
-
-        {/* Date Selection */}
-        <div className="p-4">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-600 mb-2 block">Trip Start Date</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(startDate, "MMM dd, yyyy")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={handleStartDateSelect}
-                    disabled={(date) => date < startOfDay(today)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600 mb-2 block">Trip End Date</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(endDate, "MMM dd, yyyy")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={handleEndDateSelect}
-                    disabled={(date) => date < startDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <div>
+                <label className="text-sm text-gray-600 mb-2 block">Trip End Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(endDate, "MMM dd, yyyy")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={handleEndDateSelect}
+                      disabled={(date) => date < startDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Days Section */}
-        <div className="flex-1 overflow-hidden flex flex-col ">
-          <div className="p-4 flex items-center justify-between">
-            <h2 className="font-semibold">Trip Days</h2>
+          {/* Days Section */}
+          <div className="flex-1 overflow-hidden flex flex-col ">
+            <div className="p-4 flex items-center justify-between">
+              <h2 className="font-semibold">Trip Days</h2>
 
-          </div>
-          <div className="flex-1 px-4 ">
-            <DaySelector
-              tripDays={tripDays}
-              startDate={startDate}
-              selectedDate={selectedDate}
-              handleDaySelect={handleDaySelect}
-              removeDay={removeDay}
-            />
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => {
-                const newEndDate = addDays(endDate, 1);
-                setEndDate(newEndDate);
-                setTripDays(prevDays => prevDays + 1);
-
-                // Initialize new day in schedule
-                const newDateKey = format(newEndDate, 'yyyy-MM-dd');
-                const newSchedule = {
-                  ...schedule,
-                  [newDateKey]: {
-                    Accommodation: [],
-                    Morning: [],
-                    Afternoon: [],
-                    Evening: [],
-                    Night: []
-                  }
-                }
-                updateSchedule(newSchedule);
-              }}
-              className=" mt-3 w-full"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Day
-            </Button>
-          </div>
-        </div>
-
-        {/* Total Price and Checkout */}
-        <div className=" p-4">
-          <div className="mb-2">
-            <p className="text-lg font-semibold">Total Price: ${totalPrice.toFixed(2)}</p>
-          </div>
-          <CheckoutButton
-            totalPrice={totalPrice}
-            planName={planName}
-            schedule={schedule}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-4 bg-white">
-          <div className="flex justify-between items-center">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')}>
-              <TabsList className="grid w-[400px] grid-cols-2 bg-primary opacity-80 text-neutral">
-                <TabsTrigger value="hotels">Hotels</TabsTrigger>
-                <TabsTrigger value="activities">Activities</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="flex gap-2">
-              <Button
-                variant={view === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setView('list')}
-              >
-                <List className="h-4 w-4 mr-2" />
-                List View
-              </Button>
-              <Button
-                variant={view === 'map' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setView('map')}
-              >
-                <MapIcon className="h-4 w-4 mr-2" />
-                Map View
-              </Button>
             </div>
-          </div>
-        </div>
-
-        <div className="flex-1 flex overflow-hidden">
-          <ScheduleView
-            selectedDate={selectedDate}
-            startDate={startDate}
-            endDate={endDate}
-            schedule={schedule}
-            updateSchedule={updateSchedule}
-            planName={planName}
-            onPlanNameChange={setPlanName}
-            onSavePlan={handleSavePlan}
-            activeTab={activeTab}
-          />
-
-          <div className="flex-1">
-            {view === 'list' ? (
-              <ActivitySelector
-                cityData={cityData}
-                schedule={schedule}
-                activeTab={activeTab}
+            <div className="flex-1 px-4 ">
+              <DaySelector
+                tripDays={tripDays}
                 startDate={startDate}
-                endDate={endDate}
-                categories={categories}
-                onDateChange={(start, end) => {
-                  setStartDate(start);
-                  setEndDate(end);
-                }}
+                selectedDate={selectedDate}
+                handleDaySelect={handleDaySelect}
+                removeDay={removeDay}
               />
-            ) : (
-              <MapView
-                cityData={cityData}
-                activeTab={activeTab}
-                selectedCity={selectedCity}
-                selectedCategory={selectedCategory}
-                onCityChange={(value) => {
-                  if (value === 'All') {
-                    setSelectedCity('All');
-                  } else {
-                    const found = cityData.find(city => city.name === value);
-                    setSelectedCity(found || 'All');
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  const newEndDate = addDays(endDate, 1);
+                  setEndDate(newEndDate);
+                  setTripDays(prevDays => prevDays + 1);
+
+                  // Initialize new day in schedule
+                  const newDateKey = format(newEndDate, 'yyyy-MM-dd');
+                  const newSchedule = {
+                    ...schedule,
+                    [newDateKey]: {
+                      Accommodation: [],
+                      Morning: [],
+                      Afternoon: [],
+                      Evening: [],
+                      Night: []
+                    }
                   }
+                  updateSchedule(newSchedule);
                 }}
-                onCategoryChange={setSelectedCategory}
-              />
-            )}
+                className=" mt-3 w-full"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Day
+              </Button>
+            </div>
+          </div>
+
+          {/* Total Price and Checkout */}
+          <div className=" p-4 total-price">
+            <div className="mb-2">
+              <p className="text-lg font-semibold">Total Price: ${totalPrice.toFixed(2)}</p>
+            </div>
+            <CheckoutButton
+              totalPrice={totalPrice}
+              planName={planName}
+              schedule={schedule}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          <div className="p-4 bg-white">
+            <div className="flex justify-between items-center">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')} className='hotels-tab'>
+                <TabsList className="grid w-[400px] grid-cols-2 bg-primary opacity-80 text-neutral">
+                  <TabsTrigger value="hotels">Hotels</TabsTrigger>
+                  <TabsTrigger value="activities">Activities</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="flex gap-2 map-toggle">
+                <Button
+                  variant={view === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('list')}
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  List View
+                </Button>
+                <Button
+                  variant={view === 'map' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('map')}
+                >
+                  <MapIcon className="h-4 w-4 mr-2" />
+                  Map View
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex overflow-hidden">
+            <ScheduleView
+              selectedDate={selectedDate}
+              startDate={startDate}
+              endDate={endDate}
+              schedule={schedule}
+              updateSchedule={updateSchedule}
+              planName={planName}
+              onPlanNameChange={setPlanName}
+              onSavePlan={handleSavePlan}
+              activeTab={activeTab}
+            />
+
+            <div className="flex-1">
+              {view === 'list' ? (
+                <ActivitySelector
+                  cityData={cityData}
+                  schedule={schedule}
+                  activeTab={activeTab}
+                  startDate={startDate}
+                  endDate={endDate}
+                  categories={categories}
+                  onDateChange={(start, end) => {
+                    setStartDate(start);
+                    setEndDate(end);
+                  }}
+                />
+              ) : (
+                <MapView
+                  cityData={cityData}
+                  activeTab={activeTab}
+                  selectedCity={selectedCity}
+                  selectedCategory={selectedCategory}
+                  onCityChange={(value) => {
+                    if (value === 'All') {
+                      setSelectedCity('All');
+                    } else {
+                      const found = cityData.find(city => city.name === value);
+                      setSelectedCity(found || 'All');
+                    }
+                  }}
+                  onCategoryChange={setSelectedCategory}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ >
   );
 }

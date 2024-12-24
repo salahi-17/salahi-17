@@ -14,7 +14,7 @@ interface DaySelectorProps {
 
 export default function DaySelector({ tripDays, startDate, selectedDate, handleDaySelect, removeDay }: DaySelectorProps) {
   return (
-    <ScrollArea className="h-[155px] pr-4">
+    <ScrollArea className="h-[155px] pr-4 day-selector">
       <nav className="flex flex-col gap-2">
         {Array.from({ length: Math.max(tripDays, 1) }, (_, i) => i + 1).map((day) => (
           <div key={day} className="flex items-center justify-between h-12">

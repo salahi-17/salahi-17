@@ -25,9 +25,9 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
   return (
     <Card
       ref={ref}
-      className={`activity-card group cursor-pointer overflow-hidden 
-        ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'} 
-        hover:shadow-xl transition-all duration-300`}
+      className={`activity-card group cursor-pointer overflow-hidden
+      ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'}
+      hover:shadow-xl transition-all duration-300`} 
       draggable={item.price > 0}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -42,8 +42,8 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {item.rating && (
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className="absolute top-2 right-2 flex items-center gap-1 bg-white/90"
               >
                 <Star className="h-4 w-4 fill-yellow-400" />
@@ -56,7 +56,7 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
               <h4 className="font-semibold text-lg">{item.name}</h4>
               <Badge>{category}</Badge>
             </div>
-            
+
             <div className="flex items-center text-gray-500 text-sm">
               <MapPin className="h-4 w-4 mr-1" />
               <span className="truncate">{item.location}</span>

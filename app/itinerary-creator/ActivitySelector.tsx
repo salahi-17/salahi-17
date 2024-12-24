@@ -287,7 +287,7 @@ export default function ActivitySelector({
         {activeTab === 'hotels' ? (
           <div className="space-y-6">
             {/* Filters for hotels */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 filters">
               <div>
                 <span className="text-sm text-gray-600">Where to?</span>
                 {/* Location selector */}

@@ -440,7 +440,7 @@ export default function ScheduleView({
 
   if (activeTab === 'hotels') {
     return (
-      <div className="flex flex-col w-96 h-full bg-white">
+      <div className="flex flex-col w-96 h-full bg-white schedule-view">
         <div className="px-4 pt-6 pb-4">
           <h1 className="text-2xl font-bold">Hotels</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -548,7 +548,7 @@ export default function ScheduleView({
 
   // Activities view
   return (
-    <div className="flex flex-col w-96 h-full bg-white relative">
+    <div className="flex flex-col w-96 h-full bg-white relative schedule-view">
       <div className="px-4 pt-6 pb-4 ">
         <h1 className="text-2xl font-bold">
           Day {differenceInDays(selectedDate, startDate) + 1}

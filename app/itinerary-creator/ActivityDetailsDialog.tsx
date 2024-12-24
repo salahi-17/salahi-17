@@ -95,7 +95,7 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                             <div>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-2xl font-bold">${item.price.toFixed(2)}</span>
-                                    <span className="text-gray-500">per {isHotel ? 'night' : 'person'}</span>
+                                    <span className="text-gray-500">per person</span>
                                 </div>
                             </div>
 
