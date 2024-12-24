@@ -1,6 +1,4 @@
-// LazyImage.tsx
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 
 interface LazyImageProps {
   src: string;
@@ -8,71 +6,33 @@ interface LazyImageProps {
   className?: string;
 }
 
-const LazyImage: React.FC<LazyImageProps> = ({ src, alt, className }) => {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function LazyImage({ src, alt, className = '' }: LazyImageProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadImage = async () => {
-      try {
-        const cachedImage = localStorage.getItem(src);
-        if (cachedImage) {
-          if (isMounted) {
-            setImageSrc(cachedImage);
-            setLoading(false);
-          }
-          return;
-        }
-
-        const response = await fetch(src);
-        const blob = await response.blob();
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-          if (isMounted) {
-            const base64data = reader.result as string;
-            setImageSrc(base64data);
-            setLoading(false);
-            try {
-              localStorage.setItem(src, base64data);
-            } catch (error) {
-              console.warn('Failed to cache image:', error);
-            }
-          }
-        };
-
-        reader.readAsDataURL(blob);
-      } catch (error) {
-        console.error('Error loading image:', error);
-        if (isMounted) {
-          setImageSrc(src); // Fallback to original source
-          setLoading(false);
-        }
-      }
-    };
-
-    setLoading(true);
-    loadImage();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [src]);
-
-  if (loading) {
-    return <div className={`${className} bg-gray-200 animate-pulse`} />;
+  if (error) {
+    return (
+      <div className={`${className} bg-gray-100 flex items-center justify-center`}>
+        <span className="text-sm text-gray-500">Failed to load image</span>
+      </div>
+    );
   }
 
   return (
-    <img
-      src={imageSrc || src}
-      alt={alt}
-      className={className}
-      loading="lazy"
-    />
+    <>
+      {isLoading && (
+        <div className={`${className} bg-gray-100 animate-pulse`} />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${isLoading ? 'hidden' : ''}`}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setError('Failed to load image');
+          setIsLoading(false);
+        }}
+      />
+    </>
   );
-};
-
-export default React.memo(LazyImage);
+}

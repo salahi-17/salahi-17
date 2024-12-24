@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { format, addDays, differenceInDays, parse, eachDayOfInterval, startOfDay, isAfter, isBefore } from "date-fns";
+import { format, addDays, differenceInDays, parse, eachDayOfInterval, startOfDay, isAfter, isBefore, isSameDay } from "date-fns";
 import { CalendarIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,13 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const router = useRouter();
   const { data: session } = useSession();
   const { toast } = useToast();
+  const [hotelDateRanges, setHotelDateRanges] = useState<{
+    [hotelId: string]: {
+      hotel: ScheduleItem;
+      startDate: Date;
+      endDate: Date;
+    };
+  }>({});
 
   const searchParams = useSearchParams();
 
@@ -62,25 +69,36 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
 
   useEffect(() => {
     const id = searchParams.get('id');
-    const category = searchParams.get('category');
-    const area = searchParams.get('area');
-
     if (id) {
       setItineraryId(id);
       fetchItinerary(id);
+      // Clean up localStorage when loading a saved itinerary
+      localStorage.removeItem('unsavedItinerary');
     } else {
       // Load from local storage if no ID is provided
-      const savedItinerary = localStorage.getItem('unsavedItinerary');
-      if (savedItinerary) {
-        const parsedItinerary = JSON.parse(savedItinerary);
-        setPlanName(parsedItinerary.planName);
-        setStartDate(new Date(parsedItinerary.startDate));
-        setEndDate(new Date(parsedItinerary.endDate));
-        setTripDays(parsedItinerary.tripDays);
-        setSchedule(parsedItinerary.schedule);
-        setSelectedDate(new Date(parsedItinerary.selectedDate));
-      } else {
-        // Initialize schedule with default dates
+      try {
+        const savedItinerary = localStorage.getItem('unsavedItinerary');
+        if (savedItinerary) {
+          const parsedItinerary = JSON.parse(savedItinerary);
+          setPlanName(parsedItinerary.planName);
+          setStartDate(new Date(parsedItinerary.startDate));
+          setEndDate(new Date(parsedItinerary.endDate));
+          setTripDays(parsedItinerary.tripDays);
+          setSchedule(parsedItinerary.schedule);
+          setSelectedDate(new Date(parsedItinerary.selectedDate));
+        } else {
+          // Initialize schedule with default dates
+          const initialStartDate = today;
+          const initialEndDate = today;
+          setStartDate(initialStartDate);
+          setEndDate(initialEndDate);
+          setSelectedDate(initialStartDate);
+          setTripDays(1);
+          initializeSchedule(initialStartDate, initialEndDate);
+        }
+      } catch (error) {
+        console.warn('Error loading from localStorage:', error);
+        // Initialize with defaults if loading fails
         const initialStartDate = today;
         const initialEndDate = today;
         setStartDate(initialStartDate);
@@ -90,16 +108,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         initializeSchedule(initialStartDate, initialEndDate);
       }
     }
-
-    if (category) {
-      setSelectedCategory(category);
-    }
-
-    if (area && cityData.length > 0) {
-      const foundCity = cityData.find(city => city.name.toLowerCase() === area.toLowerCase());
-      setSelectedCity(foundCity || 'All');
-    }
-  }, [searchParams, cityData])
+  }, [searchParams, cityData]);
 
   useEffect(() => {
     // Calculate total price whenever the schedule changes
@@ -129,6 +138,42 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
     }, {} as Record<string, City>);
     setCityData(Object.values(groupedData));
   }, [initialCityData]);
+
+  useEffect(() => {
+    const newHotelRanges: {
+      [hotelId: string]: {
+        hotel: ScheduleItem;
+        startDate: Date;
+        endDate: Date;
+      };
+    } = {};
+
+    // Sort dates to process them in order
+    const dates = Object.keys(schedule).sort();
+
+    dates.forEach(dateStr => {
+      const hotels = schedule[dateStr].Accommodation;
+      hotels.forEach(hotel => {
+        const currentDate = new Date(dateStr);
+
+        if (newHotelRanges[hotel.id]) {
+          // Check if this date is consecutive
+          const prevEnd = newHotelRanges[hotel.id].endDate;
+          if (currentDate.getTime() - prevEnd.getTime() === 86400000) { // One day in milliseconds
+            newHotelRanges[hotel.id].endDate = currentDate;
+          }
+        } else {
+          newHotelRanges[hotel.id] = {
+            hotel,
+            startDate: currentDate,
+            endDate: currentDate
+          };
+        }
+      });
+    });
+
+    setHotelDateRanges(newHotelRanges);
+  }, [schedule]);
 
   const fetchItinerary = async (id: string) => {
     try {
@@ -453,15 +498,85 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
   const updateSchedule = (newSchedule: Schedule) => {
     setSchedule(newSchedule);
     if (!itineraryId) {
-      const itineraryToSave = {
-        planName,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        selectedDate: selectedDate.toISOString(),
-        tripDays,
-        schedule: newSchedule,
-      };
-      localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
+      try {
+        const itineraryToSave = {
+          planName,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          selectedDate: selectedDate.toISOString(),
+          tripDays,
+          schedule: newSchedule,
+        };
+        
+        try {
+          localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
+        } catch (error: any) {
+          // If quota exceeded, try to clear old data first
+          if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            // Clear any old itineraries
+            localStorage.removeItem('unsavedItinerary');
+            
+            // Try saving again
+            try {
+              localStorage.setItem('unsavedItinerary', JSON.stringify(itineraryToSave));
+            } catch (retryError) {
+              // If still failing, save minimal data
+              const minimalItinerary = {
+                planName,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                selectedDate: selectedDate.toISOString(),
+                tripDays,
+                // Only save essential schedule data
+                schedule: Object.fromEntries(
+                  Object.entries(newSchedule).map(([date, daySchedule]) => [
+                    date,
+                    {
+                      ...daySchedule,
+                      // Only save IDs and essential info for each activity
+                      Accommodation: daySchedule.Accommodation.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        guestCount: item.guestCount
+                      })),
+                      Morning: daySchedule.Morning.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        guestCount: item.guestCount
+                      })),
+                      Afternoon: daySchedule.Afternoon.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        guestCount: item.guestCount
+                      })),
+                      Evening: daySchedule.Evening.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        guestCount: item.guestCount
+                      })),
+                      Night: daySchedule.Night.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        guestCount: item.guestCount
+                      }))
+                    }
+                  ])
+                )
+              };
+              localStorage.setItem('unsavedItinerary', JSON.stringify(minimalItinerary));
+            }
+          }
+          // If error persists, log it but don't break the app
+          console.warn('Could not save to localStorage:', error);
+        }
+      } catch (error) {
+        console.warn('Error updating schedule:', error);
+      }
     }
   };
 
@@ -574,26 +689,26 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <div className="p-4 max-h-[296px]"> {/* Fixed height to show approximately 3 items */}
           <ScrollArea className="h-full pr-4">
             {activeTab === 'hotels' ? (
-              // Hotels List
               <div className="space-y-2">
-                {Object.entries(schedule).some(([_, day]) => day.Accommodation.length > 0) ? (
-                  Object.entries(schedule).map(([date, day]) => (
-                    day.Accommodation.map((hotel, index) => (
-                      <div
-                        key={`${hotel.id}-${index}`}
-                        className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">{hotel.name}</p>
-                            <p className="text-xs text-gray-500">
-                              Day {differenceInDays(new Date(date), startDate) + 1}
-                            </p>
-                          </div>
-                          <p className="text-sm font-medium">${hotel.price.toFixed(2)}</p>
+                {Object.keys(hotelDateRanges).length > 0 ? (
+                  Object.values(hotelDateRanges).map(({ hotel, startDate, endDate }) => (
+                    <div
+                      key={hotel.id}
+                      className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{hotel.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {format(startDate, 'MMM dd')}
+                            {!isSameDay(startDate, endDate) && ` - ${format(endDate, 'MMM dd')}`}
+                          </p>
                         </div>
+                        <p className="text-sm font-medium">
+                          ${(hotel.price * differenceInDays(addDays(endDate, 1), startDate)).toFixed(2)}
+                        </p>
                       </div>
-                    ))
+                    </div>
                   ))
                 ) : (
                   <div className="bg-gray-50 rounded-lg p-3">
@@ -700,7 +815,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <div className="flex-1 overflow-hidden flex flex-col ">
           <div className="p-4 flex items-center justify-between">
             <h2 className="font-semibold">Trip Days</h2>
-            
+
           </div>
           <div className="flex-1 px-4 ">
             <DaySelector
