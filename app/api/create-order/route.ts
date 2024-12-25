@@ -4,22 +4,22 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const API_URL = 
-// process.env.NODE_ENV === 'production' 
-//   ? 'https://merchant.revolut.com/api/orders' : 
-  'https://sandbox-merchant.revolut.com/api/orders';
+const API_URL =
+    // process.env.NODE_ENV === 'production' 
+    //   ? 'https://merchant.revolut.com/api/orders' : 
+    'https://sandbox-merchant.revolut.com/api/orders';
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
-    const { amount, currency, schedule, guestEmail } = await req.json();
+    const { amount, currency, schedule, guestEmail, guestName } = await req.json();
 
     try {
         let user;
 
         if (session?.user?.email) {
             // Handle logged-in user
-            user = await prisma.user.findUnique({ 
-                where: { email: session.user.email } 
+            user = await prisma.user.findUnique({
+                where: { email: session.user.email }
             });
             if (!user) {
                 return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
                 create: {
                     email: guestEmail,
                     isGuest: true,
-                    name: `Guest-${Date.now()}` // Optional: create a temporary name
+                    name: guestName || `Guest-${Date.now()}` // Use provided name or fallback
                 },
             });
         } else {
@@ -104,10 +104,10 @@ export async function POST(req: Request) {
                 amount,
                 currency,
                 planName: schedule.name,
-                schedule: JSON.stringify({ 
-                    ...schedule, 
+                schedule: JSON.stringify({
+                    ...schedule,
                     itineraryId: itinerary.id,
-                    isGuest: user.isGuest 
+                    isGuest: user.isGuest
                 }),
                 status: 'PENDING',
                 userId: user.id,
@@ -143,14 +143,14 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error('Error creating order:', error);
         if (error instanceof Error) {
-            return NextResponse.json({ 
-                error: 'Failed to create order', 
-                details: error.message 
+            return NextResponse.json({
+                error: 'Failed to create order',
+                details: error.message
             }, { status: 500 });
         } else {
-            return NextResponse.json({ 
-                error: 'Failed to create order', 
-                details: 'An unknown error occurred' 
+            return NextResponse.json({
+                error: 'Failed to create order',
+                details: 'An unknown error occurred'
             }, { status: 500 });
         }
     }

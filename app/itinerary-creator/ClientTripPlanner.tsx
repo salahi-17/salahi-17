@@ -57,6 +57,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
       endDate: Date;
     };
   }>({});
+  const [hasExternalHotels, setHasExternalHotels] = useState(false);
 
   const searchParams = useSearchParams();
 
@@ -916,6 +917,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
               onPlanNameChange={setPlanName}
               onSavePlan={handleSavePlan}
               activeTab={activeTab}
+              hasExternalHotels={hasExternalHotels}
             />
 
             <div className="flex-1">
@@ -931,6 +933,8 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                     setStartDate(start);
                     setEndDate(end);
                   }}
+                  hasExternalHotels={hasExternalHotels}
+                  setHasExternalHotels={setHasExternalHotels}
                 />
               ) : (
                 <MapView

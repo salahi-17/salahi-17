@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Activity, City, Schedule } from './types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useInView } from 'react-intersection-observer';
 import LazyImage from '@/components/LazyImage';
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import ActivityDetailsDialog from './ActivityDetailsDialog';
 import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { X } from 'lucide-react';
+import PriceFilter from './PriceFilter';
 
 interface ActivitySelectorProps {
   cityData: City[];
@@ -68,6 +69,8 @@ ActivityCard.displayName = 'ActivityCard';
 interface ActivitySelectorProps {
   cityData: City[];
   schedule: Schedule;
+  hasExternalHotels: boolean;
+  setHasExternalHotels: (value: boolean) => void;
 }
 
 export default function ActivitySelector({
@@ -77,7 +80,9 @@ export default function ActivitySelector({
   startDate,
   endDate,
   categories,
-  onDateChange
+  onDateChange,
+  hasExternalHotels,
+  setHasExternalHotels,
 }: ActivitySelectorProps) {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [guestCount, setGuestCount] = useState<number>(1);
@@ -86,13 +91,10 @@ export default function ActivitySelector({
   const [searchLocation, setSearchLocation] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
-  const [hasExternalHotels, setHasExternalHotels] = useState(false);
   const { toast } = useToast();
 
   const canAddActivities = () => {
-    if (hasExternalHotels) return true;
-    if (!schedule) return false;
-    return Object.entries(schedule).every(([_, daySchedule]) =>
+    return hasExternalHotels || Object.entries(schedule).every(([_, daySchedule]) =>
       daySchedule.Accommodation && daySchedule.Accommodation.length > 0
     );
   };
@@ -136,11 +138,11 @@ export default function ActivitySelector({
       e.preventDefault();
       return;
     }
-  
+
     const isHotel = category.toLowerCase() === 'hotel';
     if (!isHotel && !canAddActivities()) {
       e.preventDefault();
-      
+
       // Create and show dialog for hotel requirement
       toast({
         title: "Hotels Required",
@@ -149,8 +151,8 @@ export default function ActivitySelector({
             <p>Please select hotels for all days before adding activities.</p>
             <div className="flex flex-col space-y-2">
               <p className="text-sm text-gray-600">Already booked hotels elsewhere?</p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   setHasExternalHotels(true);
@@ -170,7 +172,7 @@ export default function ActivitySelector({
       });
       return;
     }
-  
+
     const dragData = {
       ...item,
       category,
@@ -179,9 +181,9 @@ export default function ActivitySelector({
       totalPrice: item.price * guestCount,
       isHotel: isHotel
     };
-  
+
     e.dataTransfer.setData("application/json", JSON.stringify(dragData));
-  
+
     if (e.currentTarget.classList.contains('activity-card')) {
       e.currentTarget.classList.add('dragging');
     }
@@ -265,195 +267,156 @@ export default function ActivitySelector({
 
   return (
     <>
-    {hasExternalHotels && (
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 ">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-blue-700">Using externally booked hotels</p>
-            <p className="text-xs text-blue-600">You can add activities without selecting hotels</p>
+      {hasExternalHotels && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 ">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-blue-700">Using externally booked hotels</p>
+              <p className="text-xs text-blue-600">You can add activities without selecting hotels</p>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setHasExternalHotels(false)}
+            >
+              Remove
+            </Button>
           </div>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setHasExternalHotels(false)}
-          >
-            Remove
-          </Button>
         </div>
-      </div>
-    )}
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      <div className="flex-1 overflow-auto px-6 py-4">
-        {activeTab === 'hotels' ? (
-          <div className="space-y-6">
-            {/* Filters for hotels */}
-            <div className="flex gap-4 filters">
-              <div>
-                <span className="text-sm text-gray-600">Where to?</span>
+      )}
+      <div className="flex flex-col h-full w-full overflow-hidden">
+        <div className="flex-1 overflow-auto px-6 py-4">
+          {activeTab === 'hotels' ? (
+            <div className="space-y-6">
+              {/* Filters for hotels */}
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,320px))] gap-6 filters">
                 {/* Location selector */}
-                <div>
-                  <Select
-                    value={selectedCity === 'All' ? 'All' : selectedCity.name}
-                    onValueChange={(value) => {
-                      if (value === 'All') {
-                        setSelectedCity('All');
-                      } else {
-                        const found = cityData.find(city => city.name === value);
-                        setSelectedCity(found || 'All');
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="All Locations" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">All Locations</SelectItem>
-                      {cityData.map(city => (
-                        <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="w-[320px]">
+                  <span className="text-sm text-gray-600">Where to?</span>
+                  <div className="mt-2">
+                    <Select
+                      value={selectedCity === 'All' ? 'All' : selectedCity.name}
+                      onValueChange={(value) => {
+                        if (value === 'All') {
+                          setSelectedCity('All');
+                        } else {
+                          const found = cityData.find(city => city.name === value);
+                          setSelectedCity(found || 'All');
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Locations" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All Locations</SelectItem>
+                        {cityData.map(city => (
+                          <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <span className="text-sm text-gray-600">Travelers</span>
-                <Select value={guestCount.toString()} onValueChange={(v) => setGuestCount(Number(v))}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue>
-                      {guestCount} {guestCount === 1 ? 'Traveler' : 'Travelers'}
-                    </SelectValue>
+                {/* Travelers selector */}
+                <div className="w-[320px]">
+                  <span className="text-sm text-gray-600">Travelers</span>
+                  <div className="mt-2">
+                    <Select value={guestCount.toString()} onValueChange={(v) => setGuestCount(Number(v))}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue>
+                          {guestCount} {guestCount === 1 ? 'Traveler' : 'Travelers'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Budget filter component */}
+                <PriceFilter
+                  value={priceRange}
+                  onChange={setPriceRange}
+                  maxAllowedPrice={getPriceRanges(cityData).max} // Pass the maximum price from your data
+                />
+
+              </div>
+              <h2 className="text-xl font-semibold">
+                Hotels in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
+              </h2>
+
+              {/* Use the same renderActivityGrid for hotels */}
+              {renderActivityGrid(getActivities('hotels'))}
+            </div>
+          ) : (
+            // Activities View
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    <SelectItem value="All">All Categories</SelectItem>
+                    {Array.from(new Set(cityData.flatMap(city =>
+                      Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
+                    ))).map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={selectedCity === 'All' ? 'All' : selectedCity.name}
+                  onValueChange={(value) => {
+                    if (value === 'All') {
+                      setSelectedCity('All');
+                    } else {
+                      const found = cityData.find(city => city.name === value);
+                      setSelectedCity(found || 'All');
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select an area" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Locations</SelectItem>
+                    {cityData.map(city => (
+                      <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={selectedThemes[0] || 'all'}
+                  onValueChange={(value) => setSelectedThemes(value === 'all' ? [] : [value])}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Themes</SelectItem>
+                    {getAllThemes(cityData).map(theme => (
+                      <SelectItem key={theme} value={theme}>{theme}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <span className="text-sm text-gray-600">Budget</span>
-                <Select
-                  value={priceRange ? `${priceRange[0]}-${priceRange[1]}` : 'all'}
-                  onValueChange={(value) => {
-                    if (value === 'all') {
-                      setPriceRange(null);
-                    } else {
-                      const [min, max] = value.split('-').map(Number);
-                      setPriceRange([min, max]);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select price range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Price</SelectItem>
-                    {(() => {
-                      const { min, max } = getPriceRanges(cityData);
+              <h2 className="text-xl font-semibold">
+                {selectedCategory === 'All' ? 'All Activities' : selectedCategory} in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
+              </h2>
 
-                      // Calculate the range size based on min and max
-                      const range = max - min;
-                      const steps = 4; // Number of divisions we want
-                      const increment = Math.ceil(range / steps);
-
-                      // Generate ranges dynamically
-                      const ranges: [number, number][] = [];
-                      for (let i = min; i < max; i += increment) {
-                        ranges.push([
-                          i,
-                          Math.min(i + increment - 1, max) // Ensure last range doesn't exceed max
-                        ]);
-                      }
-
-                      return ranges.map(([rangeMin, rangeMax]) => (
-                        <SelectItem
-                          key={`${rangeMin}-${rangeMax}`}
-                          value={`${rangeMin}-${rangeMax}`}
-                        >
-                          ${rangeMin} - ${rangeMax}
-                        </SelectItem>
-                      ));
-                    })()}
-                  </SelectContent>
-                </Select>
-              </div>
+              {renderActivityGrid(getActivities('activities'))}
             </div>
-
-
-            <h2 className="text-xl font-semibold">
-              Hotels in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
-            </h2>
-
-            {/* Use the same renderActivityGrid for hotels */}
-            {renderActivityGrid(getActivities('hotels'))}
-          </div>
-        ) : (
-          // Activities View
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Categories</SelectItem>
-                  {Array.from(new Set(cityData.flatMap(city =>
-                    Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
-                  ))).map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedCity === 'All' ? 'All' : selectedCity.name}
-                onValueChange={(value) => {
-                  if (value === 'All') {
-                    setSelectedCity('All');
-                  } else {
-                    const found = cityData.find(city => city.name === value);
-                    setSelectedCity(found || 'All');
-                  }
-                }}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select an area" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Locations</SelectItem>
-                  {cityData.map(city => (
-                    <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedThemes[0] || 'all'}
-                onValueChange={(value) => setSelectedThemes(value === 'all' ? [] : [value])}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
-                  {getAllThemes(cityData).map(theme => (
-                    <SelectItem key={theme} value={theme}>{theme}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <h2 className="text-xl font-semibold">
-              {selectedCategory === 'All' ? 'All Activities' : selectedCategory} in {selectedCity === 'All' ? 'All Locations' : selectedCity.name}
-            </h2>
-
-            {renderActivityGrid(getActivities('activities'))}
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 interface CheckoutAuthDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onGuestCheckout: (email: string) => void;
+  onGuestCheckout: (email: string, name: string) => void;
 }
 
 export default function CheckoutAuthDialog({
@@ -19,11 +19,23 @@ export default function CheckoutAuthDialog({
   onGuestCheckout,
 }: CheckoutAuthDialogProps) {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [isGuestMode, setIsGuestMode] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
   const handleGuestCheckout = () => {
+    // Validate name
+    if (!name.trim()) {
+      toast({
+        title: "Name Required",
+        description: "Please enter your name to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email
     if (!email.trim()) {
       toast({
         title: "Email Required",
@@ -42,7 +54,7 @@ export default function CheckoutAuthDialog({
       return;
     }
 
-    onGuestCheckout(email);
+    onGuestCheckout(email, name);
     onClose();
   };
 
@@ -51,8 +63,16 @@ export default function CheckoutAuthDialog({
     onClose();
   };
 
+  // Reset form when dialog closes
+  const handleClose = () => {
+    setEmail('');
+    setName('');
+    setIsGuestMode(false);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Continue to Checkout</DialogTitle>
@@ -63,6 +83,16 @@ export default function CheckoutAuthDialog({
 
         {isGuestMode ? (
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <Input

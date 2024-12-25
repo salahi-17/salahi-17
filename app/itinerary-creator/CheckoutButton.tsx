@@ -21,7 +21,7 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
   const { toast } = useToast();
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
 
-  const handleCheckout = async (guestEmail?: string) => {
+  const handleCheckout = async (guestEmail?: string, guestName?: string) => {
     const formattedSchedule = {
       name: planName,
       startDate: format(startDate, 'yyyy-MM-dd'),
@@ -48,7 +48,8 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
           amount: Math.round(totalPrice * 100),
           currency: 'USD',
           schedule: formattedSchedule,
-          guestEmail // Add this for guest checkout
+          guestEmail,
+          guestName // Add this for guest checkout
         }),
       });
 
@@ -95,11 +96,10 @@ export default function CheckoutButton({ totalPrice, planName, schedule, startDa
       <Button onClick={handleClick} disabled={totalPrice === 0}>
         Checkout
       </Button>
-
       <CheckoutAuthDialog
         isOpen={isAuthDialogOpen}
         onClose={() => setIsAuthDialogOpen(false)}
-        onGuestCheckout={(email) => handleCheckout(email)}
+        onGuestCheckout={(email, name) => handleCheckout(email, name)}
       />
     </>
   );

@@ -33,6 +33,7 @@ interface ScheduleViewProps {
   onPlanNameChange: (newName: string) => void;
   onSavePlan: () => void;
   activeTab?: 'hotels' | 'activities';
+  hasExternalHotels: boolean;
 }
 
 export default function ScheduleView({
@@ -44,7 +45,8 @@ export default function ScheduleView({
   planName,
   onPlanNameChange,
   onSavePlan,
-  activeTab = 'hotels'
+  activeTab = 'hotels',
+  hasExternalHotels
 }: ScheduleViewProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentHotel, setCurrentHotel] = useState<ScheduleItem | null>(null);
@@ -82,8 +84,8 @@ export default function ScheduleView({
         
         updateSchedule(newSchedule);
       } else if (!isHotel) {
-        // Check if there's a hotel for this day
-        const hasHotel = schedule[dateKey]?.Accommodation?.length > 0;
+        // Check if there's a hotel for this day OR external hotels are allowed
+        const hasHotel = hasExternalHotels || schedule[dateKey]?.Accommodation?.length > 0;
         if (!hasHotel) {
           toast({
             title: "Hotel Required",
@@ -123,7 +125,7 @@ export default function ScheduleView({
     } catch (error) {
       console.error("Error handling drop:", error);
     }
-  };
+};
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

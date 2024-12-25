@@ -32,6 +32,7 @@ export default function MapView({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
+  const [activeInfoWindow, setActiveInfoWindow] = useState<google.maps.InfoWindow | null>(null);
 
   const createMarkerIcon = (isSelected: boolean) => {
     const color = isSelected ? '#dbaa9b' : '#f59e0b';
@@ -129,7 +130,7 @@ export default function MapView({
               <div style="width: 200px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;">
                 <div style="width: 100%; height: 120px; position: relative;">
                   <img src="${activity.image}" alt="${activity.name}" 
-                    style="width: 100%; height: 100%; object-fit: cover;" />
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s;" />
                   <div style="position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px;
                     background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
                     <h3 style="margin: 0; color: white; font-size: 14px; font-weight: 600;">
@@ -142,28 +143,35 @@ export default function MapView({
             pixelOffset: new google.maps.Size(0, -20)
           });
 
-          marker.addListener('click', () => {
+          // Show info window on hover
+          marker.addListener('mouseover', () => {
+            if (activeInfoWindow) {
+              activeInfoWindow.close();
+            }
             // Close all other info windows
             newInfoWindows.forEach(w => w.close());
             newMarkers.forEach(m => m.setIcon(createMarkerIcon(false)));
             
-            // Update this marker's icon
+            // Update this marker's icon and show info window
             marker.setIcon(createMarkerIcon(true));
-            
-            // Open this info window
             infoWindow.open(mapInstance, marker);
-            
-            // Set selected activity (but don't open dialog yet)
-            setSelectedActivity(activity);
+            setActiveInfoWindow(infoWindow);
           });
 
-          // Add click listener to the info window content
+          // Open dialog on marker click
+          marker.addListener('click', () => {
+            setSelectedActivity(activity);
+            setShowDetailsDialog(true);
+          });
+
+          // Add click listener to the info window for opening dialog
           google.maps.event.addListener(infoWindow, 'domready', () => {
             const content = infoWindow.getContent();
             if (content) {
               const container = document.querySelector('.gm-style-iw-d');
               if (container) {
                 container.addEventListener('click', () => {
+                  setSelectedActivity(activity);
                   setShowDetailsDialog(true);
                 });
               }
@@ -187,42 +195,41 @@ export default function MapView({
 
   return (
     <div className="h-full flex flex-col">
-    {/* Filters */}
-    <div className="p-4 bg-white border-b">
-      <div className="flex gap-4 items-center">
-        <Select 
-          value={selectedCity === 'All' ? 'All' : selectedCity.name}
-          onValueChange={onCityChange}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Locations</SelectItem>
-            {cityData.map(city => (
-              <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {activeTab === 'activities' && (
-          <Select value={selectedCategory} onValueChange={onCategoryChange}>
+      {/* Filters */}
+      <div className="p-4 bg-white border-b">
+        <div className="flex gap-4 items-center">
+          <Select 
+            value={selectedCity === 'All' ? 'All' : selectedCity.name}
+            onValueChange={onCityChange}
+          >
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Categories</SelectItem>
-              {Array.from(new Set(cityData.flatMap(city =>
-                Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
-              ))).map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
+              <SelectItem value="All">All Locations</SelectItem>
+              {cityData.map(city => (
+                <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-        )}
-      </div>
-    </div>
 
+          {activeTab === 'activities' && (
+            <Select value={selectedCategory} onValueChange={onCategoryChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Categories</SelectItem>
+                {Array.from(new Set(cityData.flatMap(city =>
+                  Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
+                ))).map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
 
       {/* Map */}
       <div className={`relative flex-1 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
