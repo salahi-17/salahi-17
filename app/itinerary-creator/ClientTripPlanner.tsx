@@ -690,7 +690,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         {/* Left Panel */}
         <div className="w-64 bg-white flex flex-col ">
           {/* Itinerary Status/List */}
-          <div className="p-4 max-h-[296px]"> {/* Fixed height to show approximately 3 items */}
+          <div className="p-4 max-h-[296px]">
             <ScrollArea className="h-full pr-4">
               {activeTab === 'hotels' ? (
                 <div className="space-y-2">
@@ -878,6 +878,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         <div className="flex-1 flex flex-col">
           <div className="p-4 bg-white">
             <div className="flex justify-between items-center">
+              <div></div>
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotels' | 'activities')} className='hotels-tab'>
                 <TabsList className="grid w-[400px] grid-cols-2 bg-primary opacity-80 text-neutral">
                   <TabsTrigger value="hotels">Hotels</TabsTrigger>

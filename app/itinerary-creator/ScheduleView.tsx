@@ -36,6 +36,8 @@ interface ScheduleViewProps {
   hasExternalHotels: boolean;
 }
 
+type TimeSlot = 'Morning' | 'Afternoon' | 'Evening' | 'Night' | 'Accommodation';
+
 export default function ScheduleView({
   selectedDate,
   startDate,
@@ -75,13 +77,13 @@ export default function ScheduleView({
             Night: []
           };
         }
-        
+
         newSchedule[dateKey].Accommodation = [{
           ...item,
           price: item.totalPrice || item.price,
           guestCount: item.guestCount || 1
         }];
-        
+
         updateSchedule(newSchedule);
       } else if (!isHotel) {
         // Check if there's a hotel for this day OR external hotels are allowed
@@ -125,7 +127,7 @@ export default function ScheduleView({
     } catch (error) {
       console.error("Error handling drop:", error);
     }
-};
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -147,9 +149,9 @@ export default function ScheduleView({
     Object.entries(schedule).forEach(([dateStr, daySchedule]) => {
       daySchedule.Accommodation.forEach((hotel) => {
         if (!processedHotels.has(hotel.id)) {
-          processedHotels.set(hotel.id, { 
-            dates: new Set([dateStr]), 
-            hotel 
+          processedHotels.set(hotel.id, {
+            dates: new Set([dateStr]),
+            hotel
           });
         } else {
           processedHotels.get(hotel.id)?.dates.add(dateStr);
@@ -217,7 +219,7 @@ export default function ScheduleView({
     }
 
     // Check for overlaps with other hotels, excluding the current hotel's bookings
-    const hasOverlap = hotelBookings.some(booking => 
+    const hasOverlap = hotelBookings.some(booking =>
       booking.hotel.id !== currentHotelId && // Skip checking against the same hotel
       isOverlapping(range, booking.dateRange)
     );
@@ -248,8 +250,8 @@ export default function ScheduleView({
     try {
       const data = e.dataTransfer.getData("application/json");
       if (!data) return;
-      
-      const item = JSON.parse(data) as ScheduleItem & { totalPrice?: number };
+
+      const item = JSON.parse(data) as ScheduleItem & { totalPrice?: number; dateRange?: DateRange };
       if (item.category.toLowerCase() === 'hotel') {
         // Check if hotel already exists
         const existingBooking = hotelBookings.find(booking => booking.hotelId === item.id);
@@ -262,27 +264,44 @@ export default function ScheduleView({
           return;
         }
 
+        // Check if date range is provided
+        if (!item.dateRange?.from || !item.dateRange?.to) {
+          toast({
+            title: "Date Selection Required",
+            description: "Please select stay dates before adding a hotel.",
+            duration: 3000,
+            variant: "destructive",
+          });
+          return;
+        }
+
         const hotel = {
           ...item,
           price: item.totalPrice || item.price,
           guestCount: item.guestCount || 1
         };
 
-        // For single day trips, automatically add the hotel without showing calendar
-        if (isSameDay(startDate, endDate)) {
-          const newBooking: HotelBooking = {
-            hotelId: hotel.id,
-            hotel,
-            dateRange: {
-              from: startDate,
-              to: startDate
-            }
-          };
+        const newRange: HotelDateRange = {
+          from: startOfDay(item.dateRange.from),
+          to: startOfDay(item.dateRange.to)
+        };
 
-          setHotelBookings(prev => [...prev, newBooking]);
+        if (!validateDateRange(newRange, hotel.id)) return;
 
-          const dateKey = format(startDate, 'yyyy-MM-dd');
-          const newSchedule = { ...schedule };
+        const newBooking: HotelBooking = {
+          hotelId: hotel.id,
+          hotel,
+          dateRange: newRange
+        };
+
+        setHotelBookings(prev => [...prev, newBooking]);
+
+        // Update schedule for all dates in the range
+        const newSchedule = { ...schedule };
+        const dateRange = eachDayOfInterval({ start: newRange.from, end: newRange.to });
+
+        dateRange.forEach(date => {
+          const dateKey = format(date, 'yyyy-MM-dd');
           if (!newSchedule[dateKey]) {
             newSchedule[dateKey] = {
               Accommodation: [],
@@ -293,12 +312,9 @@ export default function ScheduleView({
             };
           }
           newSchedule[dateKey].Accommodation = [hotel];
-          updateSchedule(newSchedule);
-        } else {
-          setCurrentHotel(hotel);
-          setSelectedDateRange(undefined);
-          setIsCalendarOpen(true);
-        }
+        });
+
+        updateSchedule(newSchedule);
       }
     } catch (error) {
       console.error("Error handling drop:", error);
@@ -327,7 +343,7 @@ export default function ScheduleView({
     if (!validateDateRange(newRange, currentHotel.id)) return;
 
     // Remove any existing bookings for this hotel
-    const newBookings = hotelBookings.filter(booking => 
+    const newBookings = hotelBookings.filter(booking =>
       booking.hotel.id !== currentHotel.id
     );
 
@@ -346,7 +362,7 @@ export default function ScheduleView({
     // First, clear this hotel from all dates
     Object.keys(newSchedule).forEach(dateKey => {
       if (newSchedule[dateKey]) {
-        newSchedule[dateKey].Accommodation = 
+        newSchedule[dateKey].Accommodation =
           newSchedule[dateKey].Accommodation.filter(h => h.id !== currentHotel.id);
       }
     });
@@ -391,7 +407,7 @@ export default function ScheduleView({
     // Remove this hotel from all dates in the schedule
     Object.keys(newSchedule).forEach(dateKey => {
       if (newSchedule[dateKey]) {
-        newSchedule[dateKey].Accommodation = 
+        newSchedule[dateKey].Accommodation =
           newSchedule[dateKey].Accommodation.filter(h => h.id !== bookingToRemove.hotel.id);
       }
     });
@@ -403,8 +419,8 @@ export default function ScheduleView({
     if (!validateDateRange(newRange, hotelId)) return;
 
     // Update bookings
-    setHotelBookings(prev => prev.map(booking => 
-      booking.hotelId === hotelId 
+    setHotelBookings(prev => prev.map(booking =>
+      booking.hotelId === hotelId
         ? { ...booking, dateRange: newRange }
         : booking
     ));
@@ -417,7 +433,7 @@ export default function ScheduleView({
 
     // First, remove hotel from all dates
     Object.keys(newSchedule).forEach(dateKey => {
-      newSchedule[dateKey].Accommodation = 
+      newSchedule[dateKey].Accommodation =
         newSchedule[dateKey].Accommodation.filter(h => h.id !== hotelId);
     });
 
@@ -452,7 +468,7 @@ export default function ScheduleView({
 
         <div className="flex-1 overflow-auto p-4">
           <div
-            className="border-2 border-dashed border-gray-300 rounded-lg  min-h-[120px] space-y-4 p-2"
+            className="border border-dashed border-gray-300 p-2 rounded-md min-h-16"
             onDrop={handleHotelDrop}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -526,8 +542,8 @@ export default function ScheduleView({
               onSelect={handleDateSelect}
               numberOfMonths={2}
               defaultMonth={startDate}
-              disabled={(date) => 
-                isBefore(date, startDate) || 
+              disabled={(date) =>
+                isBefore(date, startDate) ||
                 isAfter(date, endDate)
               }
               initialFocus
@@ -536,7 +552,7 @@ export default function ScheduleView({
         </Dialog>
 
         <div className="p-4 border-t">
-          <Button 
+          <Button
             onClick={onSavePlan}
             className="w-full"
             disabled={hotelBookings.length === 0}
@@ -550,33 +566,33 @@ export default function ScheduleView({
 
   // Activities view
   return (
-    <div className="flex flex-col w-96 h-full bg-white relative schedule-view">
-      <div className="px-4 pt-6 pb-4 ">
-        <h1 className="text-2xl font-bold">
+    <div className="flex flex-col w-96 h-full bg-white schedule-view">
+      <div className="px-3 py-2">
+        <h1 className="text-lg font-bold">
           Day {differenceInDays(selectedDate, startDate) + 1}
         </h1>
       </div>
 
-      <div className="flex-1 overflow-auto px-4 pb-32">
-        <div className="py-4 space-y-4 border-t-2 border-gray-200 ">
+      <div className="flex-1 overflow-auto px-3">
+        <div className="py-2 space-y-3">
           {['Morning', 'Afternoon', 'Evening', 'Night'].map((timeSlot) => (
-            <div key={timeSlot} className="flex flex-col gap-2">
-              <span className="font-semibold">{timeSlot}</span>
+            <div key={timeSlot} className="flex flex-col gap-1">
+              <span className="font-medium text-sm">{timeSlot}</span>
               <div
-                className="border-2 border-dashed border-gray-300 p-2 rounded-md min-h-[120px]"
-                onDrop={(e) => handleDrop(e, timeSlot)}
+                className="border border-dashed border-gray-300 p-2 rounded-md min-h-16"
+                onDrop={(e) => handleDrop(e, timeSlot as TimeSlot)}
                 onDragOver={(e) => e.preventDefault()}
               >
-                {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot]?.length > 0 ? (
-                  schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot].map((item, index) => (
+                {schedule[format(selectedDate, 'yyyy-MM-dd')]?.[timeSlot as TimeSlot]?.length > 0 ? (
+                  schedule[format(selectedDate, 'yyyy-MM-dd')][timeSlot as TimeSlot].map((item, index) => (
                     <ScheduleItemCard
                       key={`${item.id}-${index}`}
                       item={item}
-                      onRemove={() => removeScheduleItem(timeSlot, index)}
+                      onRemove={() => removeScheduleItem(timeSlot as TimeSlot, index)}
                     />
                   ))
                 ) : (
-                  <div className="text-gray-400 text-center py-2">
+                  <div className="text-gray-400 text-center text-sm py-1">
                     Drag and drop activities here
                   </div>
                 )}
@@ -586,15 +602,15 @@ export default function ScheduleView({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 border-t-2 border-gray-200 bg-white p-4">
+      <div className="border-t border-gray-200 bg-white p-3">
         <input
           type="text"
           value={planName}
           onChange={(e) => onPlanNameChange(e.target.value)}
           placeholder="Plan Name"
-          className="w-full mb-2 px-3 py-2 border rounded-md"
+          className="w-full mb-2 px-2 py-1 text-sm border rounded-md"
         />
-        <Button onClick={onSavePlan} className="w-full">
+        <Button onClick={onSavePlan} className="w-full h-8 text-sm">
           Save Plan
         </Button>
       </div>

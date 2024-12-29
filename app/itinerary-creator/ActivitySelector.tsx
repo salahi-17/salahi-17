@@ -7,9 +7,12 @@ import { useInView } from 'react-intersection-observer';
 import LazyImage from '@/components/LazyImage';
 import ActivityDetailsDialog from './ActivityDetailsDialog';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
-import { X } from 'lucide-react';
+import { CalendarIcon, X } from 'lucide-react';
 import PriceFilter from './PriceFilter';
+import { DateRange } from 'react-day-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { isBefore, isAfter, format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
 
 interface ActivitySelectorProps {
   cityData: City[];
@@ -91,6 +94,7 @@ export default function ActivitySelector({
   const [searchLocation, setSearchLocation] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
 
   const canAddActivities = () => {
@@ -138,12 +142,24 @@ export default function ActivitySelector({
       e.preventDefault();
       return;
     }
-
+  
     const isHotel = category.toLowerCase() === 'hotel';
+    
+    // Add this check for hotels
+    if (isHotel && !selectedDateRange?.from && !selectedDateRange?.to) {
+      e.preventDefault();
+      toast({
+        title: "Date Selection Required",
+        description: "Please select stay dates before adding a hotel.",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+  
     if (!isHotel && !canAddActivities()) {
       e.preventDefault();
-
-      // Create and show dialog for hotel requirement
+  
       toast({
         title: "Hotels Required",
         description: (
@@ -172,18 +188,19 @@ export default function ActivitySelector({
       });
       return;
     }
-
+  
     const dragData = {
       ...item,
       category,
       type: category,
       guestCount,
       totalPrice: item.price * guestCount,
-      isHotel: isHotel
+      isHotel: isHotel,
+      dateRange: isHotel ? selectedDateRange : undefined  // Add this line
     };
-
+  
     e.dataTransfer.setData("application/json", JSON.stringify(dragData));
-
+  
     if (e.currentTarget.classList.contains('activity-card')) {
       e.currentTarget.classList.add('dragging');
     }
@@ -334,6 +351,45 @@ export default function ActivitySelector({
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                </div>
+
+                <div className="w-[320px]">
+                  <span className="text-sm text-gray-600">Stay Dates</span>
+                  <div className="mt-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal bg-transparent hover:bg-transparent"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDateRange?.from ? (
+                            selectedDateRange.to ? (
+                              `${format(selectedDateRange.from, "MMM dd")} - ${format(selectedDateRange.to, "MMM dd")}`
+                            ) : (
+                              format(selectedDateRange.from, "MMM dd")
+                            )
+                          ) : (
+                            "Select dates"
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={startDate}
+                          selected={selectedDateRange}
+                          onSelect={setSelectedDateRange}
+                          numberOfMonths={2}
+                          disabled={(date) =>
+                            isBefore(date, startDate) ||
+                            isAfter(date, endDate)
+                          }
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
