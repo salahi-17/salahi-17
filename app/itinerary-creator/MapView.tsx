@@ -3,7 +3,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Maximize2, MapPin } from "lucide-react";
-import { Activity, City } from './types';
+import { Activity, City, Schedule } from './types';
 import ActivityDetailsDialog from './ActivityDetailsDialog';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@radix-ui/react-select';
 
@@ -12,8 +12,9 @@ interface MapViewProps {
   activeTab: 'hotels' | 'activities';
   selectedCity: City | 'All';
   selectedCategory: string;
-  onCityChange: (city: string) => void;
-  onCategoryChange: (category: string) => void;
+  schedule: Schedule;  // This will be used to get itinerary items
+  onCityChange: (value: string) => void;
+  onCategoryChange: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function MapView({
@@ -21,6 +22,7 @@ export default function MapView({
   activeTab,
   selectedCity,
   selectedCategory,
+  schedule,
   onCityChange,
   onCategoryChange
 }: MapViewProps) {
@@ -29,13 +31,13 @@ export default function MapView({
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [infoWindows, setInfoWindows] = useState<google.maps.InfoWindow[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
   const [activeInfoWindow, setActiveInfoWindow] = useState<google.maps.InfoWindow | null>(null);
 
-  const createMarkerIcon = (isSelected: boolean) => {
-    const color = isSelected ? '#dbaa9b' : '#f59e0b';
+  const createMarkerIcon = (isSelected: boolean, isHotel: boolean) => {
+    // Different colors for hotels and activities
+    const color = isHotel ? '#4CAF50' : '#f59e0b';
     const scale = isSelected ? 1.2 : 1;
     
     return {
@@ -50,24 +52,22 @@ export default function MapView({
     };
   };
 
-  const getFilteredActivities = () => {
-    let activities: Activity[] = [];
+  // Get all items from the schedule
+  const getScheduleItems = () => {
+    const items: Activity[] = [];
     
-    cityData.forEach(city => {
-      if (selectedCity === 'All' || selectedCity.name === city.name) {
-        Object.entries(city.categories).forEach(([category, categoryActivities]) => {
-          const isHotel = category.toLowerCase() === 'hotel';
-          if ((activeTab === 'hotels' && isHotel) || (activeTab === 'activities' && !isHotel)) {
-            if (activeTab === 'activities' && selectedCategory !== 'All' && category !== selectedCategory) {
-              return;
-            }
-            activities = [...activities, ...categoryActivities];
-          }
-        });
-      }
+    Object.values(schedule).forEach(daySchedule => {
+      // Add hotels
+      items.push(...daySchedule.Accommodation);
+      // Add other activities
+      items.push(...daySchedule.Morning);
+      items.push(...daySchedule.Afternoon);
+      items.push(...daySchedule.Evening);
+      items.push(...daySchedule.Night);
     });
     
-    return activities;
+    // Remove duplicates based on item id
+    return Array.from(new Map(items.map(item => [item.id, item])).values());
   };
 
   useEffect(() => {
@@ -82,18 +82,21 @@ export default function MapView({
         });
 
         const google = await loader.load();
-        const activities = getFilteredActivities();
+        const scheduleItems = getScheduleItems();
         
         const bounds = new google.maps.LatLngBounds();
-        activities.forEach(activity => {
-          if (activity.latitude && activity.longitude) {
-            bounds.extend(new google.maps.LatLng(activity.latitude, activity.longitude));
+        let hasValidLocations = false;
+
+        scheduleItems.forEach(item => {
+          if (item.latitude && item.longitude) {
+            bounds.extend(new google.maps.LatLng(item.latitude, item.longitude));
+            hasValidLocations = true;
           }
         });
 
         const mapInstance = new google.maps.Map(mapRef.current, {
-          center: bounds.getCenter(),
-          zoom: 12,
+          center: hasValidLocations ? bounds.getCenter() : { lat: 0, lng: 0 },
+          zoom: hasValidLocations ? 12 : 2,
           mapTypeControl: false,
           fullscreenControl: false,
           styles: [
@@ -105,7 +108,7 @@ export default function MapView({
           ]
         });
 
-        if (activities.length > 0) {
+        if (hasValidLocations) {
           mapInstance.fitBounds(bounds);
         }
 
@@ -116,26 +119,32 @@ export default function MapView({
         const newMarkers: google.maps.Marker[] = [];
         const newInfoWindows: google.maps.InfoWindow[] = [];
 
-        activities.forEach((activity) => {
-          if (!activity.latitude || !activity.longitude) return;
+        scheduleItems.forEach((item) => {
+          if (!item.latitude || !item.longitude) return;
 
+          const isHotel = item.category.toLowerCase() === 'hotel';
+          
           const marker = new google.maps.Marker({
-            position: { lat: activity.latitude, lng: activity.longitude },
+            position: { lat: item.latitude, lng: item.longitude },
             map: mapInstance,
-            icon: createMarkerIcon(false)
+            icon: createMarkerIcon(false, isHotel)
           });
 
           const infoWindow = new google.maps.InfoWindow({
             content: `
               <div style="width: 200px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;">
                 <div style="width: 100%; height: 120px; position: relative;">
-                  <img src="${activity.image}" alt="${activity.name}" 
-                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s;" />
+                  <img src="${item.image}" alt="${item.name}" 
+                    style="width: 100%; height: 100%; object-fit: cover;" />
                   <div style="position: absolute; top: 0; left: 0; right: 0; padding: 8px 12px;
                     background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
                     <h3 style="margin: 0; color: white; font-size: 14px; font-weight: 600;">
-                      ${activity.name}
+                      ${item.name}
                     </h3>
+                    <span style="color: white; font-size: 12px; background: ${isHotel ? '#4CAF50' : '#f59e0b'}; 
+                      padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block;">
+                      ${isHotel ? 'Hotel' : 'Activity'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -148,30 +157,28 @@ export default function MapView({
             if (activeInfoWindow) {
               activeInfoWindow.close();
             }
-            // Close all other info windows
             newInfoWindows.forEach(w => w.close());
-            newMarkers.forEach(m => m.setIcon(createMarkerIcon(false)));
+            newMarkers.forEach(m => m.setIcon(createMarkerIcon(false, isHotel)));
             
-            // Update this marker's icon and show info window
-            marker.setIcon(createMarkerIcon(true));
+            marker.setIcon(createMarkerIcon(true, isHotel));
             infoWindow.open(mapInstance, marker);
             setActiveInfoWindow(infoWindow);
           });
 
           // Open dialog on marker click
           marker.addListener('click', () => {
-            setSelectedActivity(activity);
+            setSelectedActivity(item);
             setShowDetailsDialog(true);
           });
 
-          // Add click listener to the info window for opening dialog
+          // Add click listener to the info window
           google.maps.event.addListener(infoWindow, 'domready', () => {
             const content = infoWindow.getContent();
             if (content) {
               const container = document.querySelector('.gm-style-iw-d');
               if (container) {
                 container.addEventListener('click', () => {
-                  setSelectedActivity(activity);
+                  setSelectedActivity(item);
                   setShowDetailsDialog(true);
                 });
               }
@@ -191,48 +198,11 @@ export default function MapView({
     };
 
     initializeMap();
-  }, [cityData, activeTab, selectedCity, selectedCategory]);
+  }, [schedule]); // Only re-render when schedule changes
 
   return (
     <div className="h-full flex flex-col">
-      {/* Filters */}
-      <div className="p-4 bg-white border-b">
-        <div className="flex gap-4 items-center">
-          <Select 
-            value={selectedCity === 'All' ? 'All' : selectedCity.name}
-            onValueChange={onCityChange}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Locations</SelectItem>
-              {cityData.map(city => (
-                <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {activeTab === 'activities' && (
-            <Select value={selectedCategory} onValueChange={onCategoryChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Categories</SelectItem>
-                {Array.from(new Set(cityData.flatMap(city =>
-                  Object.keys(city.categories).filter(cat => cat.toLowerCase() !== 'hotel')
-                ))).map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      </div>
-
-      {/* Map */}
-      <div className={`relative flex-1 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      <div className="relative flex-1">
         <div ref={mapRef} className="w-full h-full" />
       </div>
 

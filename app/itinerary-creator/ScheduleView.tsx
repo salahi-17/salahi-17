@@ -551,14 +551,17 @@ export default function ScheduleView({
           </DialogContent>
         </Dialog>
 
-        <div className="p-4 border-t">
-          <Button
-            onClick={onSavePlan}
-            className="w-full"
-            disabled={hotelBookings.length === 0}
-          >
-            Confirm Hotels
-          </Button>
+        <div className="border-t border-gray-200 bg-white p-3">
+        <input
+          type="text"
+          value={planName}
+          onChange={(e) => onPlanNameChange(e.target.value)}
+          placeholder="Plan Name"
+          className="w-full mb-2 px-2 py-1 text-sm border rounded-md"
+        />
+        <Button onClick={onSavePlan} className="w-full h-8 text-sm">
+          Save Plan
+        </Button>
         </div>
       </div>
     );

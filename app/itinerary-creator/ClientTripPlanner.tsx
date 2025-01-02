@@ -692,7 +692,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
           {/* Itinerary Status/List */}
           <div className="p-4 max-h-[296px]">
             <ScrollArea className="h-full pr-4">
-              {activeTab === 'hotels' ? (
                 <div className="space-y-2">
                   {Object.keys(hotelDateRanges).length > 0 ? (
                     Object.values(hotelDateRanges).map(({ hotel, startDate, endDate }) => (
@@ -722,43 +721,6 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                     </div>
                   )}
                 </div>
-              ) : (
-                // Activities List
-                <div className="space-y-2">
-                  {Object.entries(schedule).some(([_, day]) =>
-                    ['Morning', 'Afternoon', 'Evening', 'Night'].some(timeSlot =>
-                      day[timeSlot].length > 0
-                    )
-                  ) ? (
-                    Object.entries(schedule).map(([date, day]) => (
-                      ['Morning', 'Afternoon', 'Evening', 'Night'].map(timeSlot => (
-                        day[timeSlot].map((activity, index) => (
-                          <div
-                            key={`${activity.id}-${timeSlot}-${index}`}
-                            className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-sm font-medium">{activity.name}</p>
-                                <p className="text-xs text-gray-500">
-                                  Day {differenceInDays(new Date(date), startDate) + 1} - {timeSlot}
-                                </p>
-                              </div>
-                              <p className="text-sm font-medium">${activity.price.toFixed(2)}</p>
-                            </div>
-                          </div>
-                        ))
-                      ))
-                    ))
-                  ) : (
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-gray-500 text-sm">
-                        No activities selected
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
               <ScrollBar />
             </ScrollArea>
           </div>
@@ -952,6 +914,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
                     }
                   }}
                   onCategoryChange={setSelectedCategory}
+                  schedule={schedule}
                 />
               )}
             </div>
