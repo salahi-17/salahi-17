@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node -P tsconfig-seed.json prisma/seed-activities.ts",
-    "postinstall": "prisma generate & prisma deploy"
+    "postinstall": "prisma generate & prisma migrate deploy"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
