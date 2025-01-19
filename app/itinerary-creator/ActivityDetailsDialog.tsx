@@ -1,5 +1,5 @@
 import { DialogContent, DialogClose } from "@/components/ui/dialog";
-import { X } from "lucide-react"; // Import X icon for close button
+import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, MapPin } from "lucide-react";
@@ -23,6 +23,9 @@ interface ActivityDetailsDialogProps {
 
 export default function ActivityDetailsDialog({ item, category, guestCount, onGuestCountChange }: ActivityDetailsDialogProps) {
     const isHotel = category.toLowerCase() === 'hotel';
+    const hasValidRating = item.rating !== undefined && item.rating !== null && !isNaN(Number(item.rating)) && Number(item.rating) > 0;
+    const hasValidAmenities = Array.isArray(item.amenities) && item.amenities.length > 0;
+
     return (
         <DialogContent className="max-w-7xl p-0">
             <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50">
@@ -34,7 +37,7 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                 <div className="h-[50vh] bg-gray-100 ">
                     <ImageGallery
                         mainImage={item.image}
-                        mediaItems={item.images} // This will now include all images including the main one
+                        mediaItems={item.images}
                     />
                 </div>
 
@@ -52,7 +55,7 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                             <MapPin className="h-4 w-4 mr-1" />
                                             <span>{item.location}</span>
                                         </div>
-                                        {item.rating && (
+                                        {hasValidRating && (
                                             <Badge variant="secondary" className="flex items-center gap-1">
                                                 <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400" />
                                                 {Number(item.rating).toFixed(1)}
@@ -62,16 +65,20 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                     </div>
                                     <p className="text-gray-600">{item.description}</p>
                                     {/* Amenities */}
-                                    <div>
-                                        <h3 className="font-semibold mb-3">Amenities</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {item.amenities.map((amenity, idx) => (
-                                                <Badge key={idx} variant="outline">
-                                                    {amenity}
-                                                </Badge>
-                                            ))}
+                                    {hasValidAmenities && (
+                                        <div>            
+                                            <h3 className="font-semibold mb-3">Amenities</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {item.amenities.map((amenity, idx) => (
+                                                    amenity && amenity.trim() !== '' && (
+                                                        <Badge key={idx} variant="outline">
+                                                            {amenity}
+                                                        </Badge>
+                                                    )
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                                 {/* Map */}
                                 {item.latitude && item.longitude && (
@@ -84,12 +91,13 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                     </div>
                                 )}
                             </div>
-
                         </div>
                     </div>
 
                     {/* Right side - Booking */}
-                    <div className="w-[320px] p-6 bg-gray-50">
+                    {
+                        item.price > 0 && (
+                            <div className="w-[320px] p-6 bg-gray-50">
                         <div className="space-y-6">
                             {/* Price */}
                             <div>
@@ -123,9 +131,11 @@ export default function ActivityDetailsDialog({ item, category, guestCount, onGu
                                     <span className="font-semibold">${(item.price * guestCount).toFixed(2)}</span>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+                        )
+                    }
+                    
                 </div>
             </div>
         </DialogContent>

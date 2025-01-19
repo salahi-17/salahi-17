@@ -142,9 +142,9 @@ export default function ActivitySelector({
       e.preventDefault();
       return;
     }
-  
+
     const isHotel = category.toLowerCase() === 'hotel';
-    
+
     // Add this check for hotels
     if (isHotel && !selectedDateRange?.from && !selectedDateRange?.to) {
       e.preventDefault();
@@ -156,10 +156,10 @@ export default function ActivitySelector({
       });
       return;
     }
-  
+
     if (!isHotel && !canAddActivities()) {
       e.preventDefault();
-  
+
       toast({
         title: "Hotels Required",
         description: (
@@ -188,7 +188,7 @@ export default function ActivitySelector({
       });
       return;
     }
-  
+
     const dragData = {
       ...item,
       category,
@@ -198,9 +198,9 @@ export default function ActivitySelector({
       isHotel: isHotel,
       dateRange: isHotel ? selectedDateRange : undefined  // Add this line
     };
-  
+
     e.dataTransfer.setData("application/json", JSON.stringify(dragData));
-  
+
     if (e.currentTarget.classList.contains('activity-card')) {
       e.currentTarget.classList.add('dragging');
     }
@@ -449,17 +449,21 @@ export default function ActivitySelector({
                 </Select>
 
                 <Select
-                  value={selectedThemes[0] || 'all'}
-                  onValueChange={(value) => setSelectedThemes(value === 'all' ? [] : [value])}
+                  value={selectedThemes[0] || "all"}  // Changed to ensure we always have a valid value
+                  onValueChange={(value) => setSelectedThemes(value === "all" ? [] : [value])}
                 >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Select theme" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Themes</SelectItem>
-                    {getAllThemes(cityData).map(theme => (
-                      <SelectItem key={theme} value={theme}>{theme}</SelectItem>
-                    ))}
+                    {getAllThemes(cityData)
+                      .filter(theme => theme && theme.trim() !== '')  
+                      .map(theme => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
