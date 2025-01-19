@@ -32,9 +32,14 @@ interface ActivityUploadFormProps {
 }
 
 interface MediaUploadStatus {
+  id: string;
   file: File;
+  previewUrl: string;
   progress: number;
   isUploading: boolean;
+  type: 'image' | 'video';
+  error?: string;
+  loaded: boolean;
 }
 
 export default function ActivityUploadForm({ activity, onSubmitSuccess }: ActivityUploadFormProps) {
@@ -42,18 +47,25 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
   const [category, setCategory] = useState(activity?.category || "");
   const [location, setLocation] = useState(activity?.location || "");
   const [description, setDescription] = useState(activity?.description || "");
-  const [price, setPrice] = useState(activity?.price.toString() || "");
-  const [amenities, setAmenities] = useState(activity?.amenities.join(", ") || "");
+  const [price, setPrice] = useState(activity?.price?.toString() || "");
+  const [amenities, setAmenities] = useState(activity?.amenities?.join(", ") || "");
   const [rating, setRating] = useState(activity?.rating?.toString() || "");
   const [latitude, setLatitude] = useState<number | null>(activity?.latitude || null);
   const [longitude, setLongitude] = useState<number | null>(activity?.longitude || null);
-  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [existingMedia, setExistingMedia] = useState(activity?.images || []);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const { toast } = useToast();
   const [mediaUploads, setMediaUploads] = useState<MediaUploadStatus[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      mediaUploads.forEach(upload => {
+        URL.revokeObjectURL(upload.previewUrl);
+      });
+    };
+  }, [mediaUploads]);
 
   const resetForm = () => {
     setName("");
@@ -65,8 +77,11 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
     setRating("");
     setLatitude(null);
     setLongitude(null);
-    setMediaFiles([]);
     setExistingMedia([]);
+    // Cleanup preview URLs
+    mediaUploads.forEach(upload => {
+      URL.revokeObjectURL(upload.previewUrl);
+    });
     setMediaUploads([]);
     formRef.current?.reset();
   };
@@ -80,6 +95,7 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       });
       return false;
     }
+
     if (isNaN(parseFloat(price))) {
       toast({
         title: "Validation Error",
@@ -88,7 +104,8 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       });
       return false;
     }
-    if (!activity && mediaFiles.length === 0) {
+
+    if (!activity && mediaUploads.length === 0 && existingMedia.length === 0) {
       toast({
         title: "Validation Error",
         description: "At least one image is required",
@@ -96,116 +113,176 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       });
       return false;
     }
+
+    // Check if any media is still loading or has errors
+    const hasUnloadedMedia = mediaUploads.some(
+      upload => !upload.loaded || upload.error
+    );
+    if (hasUnloadedMedia) {
+      toast({
+        title: "Media Loading",
+        description: "Please wait for all media to finish loading",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newUploads = files.map(file => ({
-      file,
-      progress: 0,
-      isUploading: true
-    }));
-
-    setMediaUploads(prev => [...prev, ...newUploads]);
-    setMediaFiles(prev => [...prev, ...files]);
-
-    // Start uploading each file
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Simulate progress updates
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 10;
-          setMediaUploads(prev => prev.map((upload, i) =>
-            i === index + prev.length - files.length
-              ? { ...upload, progress: Math.min(progress, 100) }
-              : upload
-          ));
-
-          if (progress >= 100) {
-            clearInterval(interval);
-            setMediaUploads(prev => prev.map((upload, i) =>
-              i === index + prev.length - files.length
-                ? { ...upload, isUploading: false }
-                : upload
-            ));
-          }
-        }, 500);
+    
+    files.forEach(file => {
+      // Create initial upload status
+      const upload: MediaUploadStatus = {
+        id: Math.random().toString(36).substring(7),
+        file,
+        previewUrl: URL.createObjectURL(file),
+        progress: 0,
+        isUploading: true,
+        type: file.type.startsWith('image/') ? 'image' : 'video',
+        loaded: false
       };
-      reader.readAsDataURL(file);
-    });
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+      setMediaUploads(prev => [...prev, upload]);
 
-    // Check if any media is still uploading
-    if (mediaUploads.some(upload => upload.isUploading)) {
-      toast({
-        title: "Please wait",
-        description: "Media files are still uploading",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validateForm()) return;
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("category", category);
-    formData.append("location", location);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("amenities", JSON.stringify(amenities.split(",").map(item => item.trim())));
-    formData.append("rating", rating || "0");
-    formData.append("latitude", latitude?.toString() || "");
-    formData.append("longitude", longitude?.toString() || "");
-
-    mediaFiles.forEach((file, index) => {
-      formData.append(`media`, file);
-    });
-
-    formData.append("existingMedia", JSON.stringify(existingMedia));
-
-    try {
-      const url = activity ? `/api/admin/activities/${activity.id}` : "/api/admin/activities";
-      const response = await fetch(url, {
-        method: activity ? "PUT" : "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Activity ${activity ? 'updated' : 'created'} successfully`,
-        });
-        resetForm();
-        onSubmitSuccess();
+      if (upload.type === 'image') {
+        // Handle image loading
+        const img = new Image();
+        img.onload = () => {
+          setMediaUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id 
+                ? { ...u, isUploading: false, loaded: true, progress: 100 }
+                : u
+            )
+          );
+        };
+        img.onerror = () => {
+          setMediaUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id 
+                ? { ...u, isUploading: false, error: 'Failed to load image', progress: 0 }
+                : u
+            )
+          );
+          URL.revokeObjectURL(upload.previewUrl);
+        };
+        img.src = upload.previewUrl;
       } else {
-        throw new Error();
+        // Handle video loading
+        const video = document.createElement('video');
+        video.onloadeddata = () => {
+          setMediaUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id 
+                ? { ...u, isUploading: false, loaded: true, progress: 100 }
+                : u
+            )
+          );
+        };
+        video.onerror = () => {
+          setMediaUploads(prev => 
+            prev.map(u => 
+              u.id === upload.id 
+                ? { ...u, isUploading: false, error: 'Failed to load video', progress: 0 }
+                : u
+            )
+          );
+          URL.revokeObjectURL(upload.previewUrl);
+        };
+
+        // Show loading progress for video
+        video.addEventListener('progress', () => {
+          if (video.buffered.length > 0) {
+            const progress = (video.buffered.end(0) / video.duration) * 100;
+            setMediaUploads(prev => 
+              prev.map(u => 
+                u.id === upload.id 
+                  ? { ...u, progress: Math.round(progress) }
+                  : u
+              )
+            );
+          }
+        });
+
+        video.src = upload.previewUrl;
+        video.load();
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${activity ? 'update' : 'create'} activity`,
-        variant: "destructive",
-      });
-    }
+    });
   };
 
-  const removeMediaFile = (index: number) => {
-    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+  const removeMediaFile = (id: string) => {
+    setMediaUploads(prev => {
+      const uploadToRemove = prev.find(upload => upload.id === id);
+      if (uploadToRemove) {
+        URL.revokeObjectURL(uploadToRemove.previewUrl);
+      }
+      return prev.filter(upload => upload.id !== id);
+    });
   };
 
   const removeExistingMedia = (mediaId: string) => {
     setExistingMedia(prev => prev.filter(media => media.id !== mediaId));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("category", category);
+      formData.append("location", location);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("amenities", JSON.stringify(amenities.split(",").map(item => item.trim())));
+      formData.append("rating", rating || "0");
+      formData.append("latitude", latitude?.toString() || "");
+      formData.append("longitude", longitude?.toString() || "");
+
+      // Add all media files
+      mediaUploads.forEach(upload => {
+        formData.append("media", upload.file);
+      });
+
+      // Add existing media information
+      formData.append("existingMedia", JSON.stringify(existingMedia));
+
+      const url = activity ? `/api/admin/activities/${activity.id}` : "/api/admin/activities";
+      const response = await fetch(url, {
+        method: activity ? "PUT" : "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      toast({
+        title: "Success",
+        description: `Activity ${activity ? 'updated' : 'created'} successfully`,
+      });
+      resetForm();
+      onSubmitSuccess();
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast({
+        title: "Error",
+        description: `Failed to ${activity ? 'update' : 'create'} activity`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Name</Label>
@@ -228,7 +305,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
           latitude={latitude}
           longitude={longitude}
           onLocationSelect={(lat, lng) => {
-            console.log(lat, lng)
             setLatitude(lat);
             setLongitude(lng);
           }}
@@ -243,7 +319,7 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="price">Price</Label>
-          <Input id="price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <Input id="price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
         </div>
         <div>
           <Label htmlFor="rating">Rating</Label>
@@ -269,7 +345,7 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
           {existingMedia.map((media) => (
             <Card key={media.id} className="relative">
-              {media.type === 'IMAGE' ? (
+              {media.type === MediaType.IMAGE ? (
                 <img src={media.url} alt="" className="w-full h-32 object-cover rounded-md" />
               ) : (
                 <video src={media.url} className="w-full h-32 object-cover rounded-md" />
@@ -286,13 +362,21 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
             </Card>
           ))}
 
-          {mediaUploads.map((upload, index) => (
-            <Card key={index} className="relative">
-              {upload.file.type.startsWith('image/') ? (
-                <img src={URL.createObjectURL(upload.file)} alt="" className="w-full h-32 object-cover rounded-md" />
+          {mediaUploads.map((upload) => (
+            <Card key={upload.id} className="relative">
+              {upload.type === 'image' ? (
+                <img 
+                  src={upload.previewUrl} 
+                  alt="" 
+                  className={`w-full h-32 object-cover rounded-md ${upload.isUploading ? 'opacity-50' : ''}`}
+                />
               ) : (
-                <video src={URL.createObjectURL(upload.file)} className="w-full h-32 object-cover rounded-md" />
+                <video 
+                  src={upload.previewUrl} 
+                  className={`w-full h-32 object-cover rounded-md ${upload.isUploading ? 'opacity-50' : ''}`}
+                />
               )}
+              
               {upload.isUploading && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="w-full max-w-[80%]">
@@ -302,16 +386,25 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
                         style={{ width: `${upload.progress}%` }}
                       />
                     </div>
-                    <p className="text-white text-xs mt-2 text-center">{Math.round(upload.progress)}%</p>
+                    <p className="text-white text-xs mt-2 text-center">
+                      {Math.round(upload.progress)}%
+                    </p>
                   </div>
                 </div>
               )}
+              
+              {upload.error && (
+                <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                  <p className="text-white text-xs px-2 text-center">{upload.error}</p>
+                </div>
+              )}
+
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
                 className="absolute top-1 right-1"
-                onClick={() => removeMediaFile(index)}
+                onClick={() => removeMediaFile(upload.id)}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -336,11 +429,18 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
 
       <Button
         type="submit"
-        disabled={mediaUploads.some(upload => upload.isUploading)}
+        disabled={isSubmitting || mediaUploads.some(upload => !upload.loaded || upload.isUploading)}
+        className="w-full"
       >
-        {activity ? 'Update' : 'Create'} Activity
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {activity ? 'Updating...' : 'Creating...'}
+          </>
+        ) : (
+          <>{activity ? 'Update' : 'Create'} Activity</>
+        )}
       </Button>
-
     </form>
   );
 }
