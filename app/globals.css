@@ -140,3 +140,7 @@
   border: 2px solid #000;
   border-radius: 4px;
 }
+
+.activity-card{
+  height: 100%;
+}

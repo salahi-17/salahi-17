@@ -25,9 +25,7 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
   return (
     <Card
       ref={ref}
-      className={`activity-card group cursor-pointer overflow-hidden
-      ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'}
-      hover:shadow-xl transition-all duration-300`} 
+      className={`activity-card h-full group cursor-pointer overflow-hidden ${item.price > 0 ? 'cursor-move' : 'cursor-not-allowed'} hover:shadow-xl transition-all duration-300`}
       draggable={item.price > 0}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -51,24 +49,22 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
               </Badge>
             )}
           </div>
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-2 flex flex-col flex-grow">
             <div className="flex items-start justify-between">
               <h4 className="font-semibold text-lg">{item.name}</h4>
               <Badge>{category}</Badge>
             </div>
-
             <div className="flex items-center text-gray-500 text-sm">
               <MapPin className="h-4 w-4 mr-1" />
               <span className="truncate">{item.location}</span>
             </div>
-
             {isHotel ? (
-              <div className="space-y-1">
+              <div className="space-y-1 flex-grow">
                 <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
-                <p className="font-bold text-lg">${item.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">per night</span></p>
+                <p className="font-bold text-lg mt-auto">${item.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">per night</span></p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 flex-grow flex flex-col">
                 <div className="flex flex-wrap gap-1">
                   {item.amenities.slice(0, 2).map((amenity, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
@@ -82,7 +78,7 @@ const ActivityCard = React.memo(({ item, category, onDragStart, onDragEnd, onCli
                   )}
                 </div>
                 {item.price > 0 && (
-                  <p className="font-bold">${item.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">per person</span></p>
+                  <p className="font-bold mt-auto">${item.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">per person</span></p>
                 )}
               </div>
             )}
