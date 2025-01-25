@@ -9,13 +9,13 @@ export default function RegisterPage({
 }: {
   searchParams: { callbackUrl: string | undefined }
 }) {
-  const callbackUrl = searchParams.callbackUrl || '/itinerary-creator'
+  const callbackUrl = searchParams.callbackUrl || '/'
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-[350px]">
         <CardHeader>
-          <h3 className="text-2xl font-bold text-center">Create an account</h3>
+          <h1 className="text-2xl font-bold text-center">Create an account</h1>
         </CardHeader>
         <CardContent>
           <RegisterForm callbackUrl={callbackUrl} />

@@ -15,7 +15,7 @@ export default function SignInPage({
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-[350px]">
         <CardHeader>
-          <h3 className="text-2xl font-bold text-center">Sign in to your account</h3>
+          <h1 className="text-2xl font-bold text-center">Sign in to your account</h1>
         </CardHeader>
         <CardContent>
           <SignInForm callbackUrl={callbackUrl} />

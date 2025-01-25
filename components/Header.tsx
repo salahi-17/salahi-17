@@ -57,7 +57,7 @@ export const Header = async () => {
             </Button>
           </Link>
 
-          {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+          {isNotAuthenticated ? (<Link href={"/auth/signin?callbackUrl=/"}>
             <Button variant={"outline"} className='border-primary'>
               Sign In
             </Button>
@@ -89,7 +89,7 @@ export const Header = async () => {
                 </Link>
               </Button>
               <Button variant={"outline"} className='border-primary'>
-                {isNotAuthenticated ? (<Link href={"/auth/signin"}>
+                {isNotAuthenticated ? (<Link href={"/auth/signin?callbackUrl=/"}>
                   Sign In
                 </Link>) : (
                   <Link href={"/profile"}>Profile</Link>)}

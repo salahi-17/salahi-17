@@ -264,7 +264,7 @@ export default function ClientTripPlanner({ initialCityData, categories }: Clien
         description: "You need to sign in to save your plan.",
         duration: 3000,
       });
-      router.push('/auth/signin');
+      router.push('/auth/signin??callbackUrl=/itinerary-creator');
       return;
     }
 
