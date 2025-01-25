@@ -11,8 +11,8 @@ import SurveyPopup from "@/components/SurveyPopup";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Zafiri - Travel Zanzibar",
-  description: "Zafiri is travel agency that lets you book your dream vacation to Zanzibar.",
+  title: "Welcome to Zafiri - Your Gateway to Zanzibar",
+  description: "Discover the beauty of Zanzibar with Zafiri. Explore breathtaking beaches, curated itineraries, and unforgettable experiences. Plan your dream trip today!",
 };
 
 export default async function RootLayout({

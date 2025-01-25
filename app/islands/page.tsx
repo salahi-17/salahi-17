@@ -4,6 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Explore Zanzibar's Islands - Unguja, Pemba, and More",
+  description: "Discover Zanzibar’s archipelago with Zafiri. Visit the iconic islands of Unguja and Pemba, and uncover hidden gems across 50 breathtaking islands.",
+};
 
 const IslandsPage = async () => {
   const islands = [

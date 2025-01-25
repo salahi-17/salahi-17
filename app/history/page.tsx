@@ -2,6 +2,12 @@ import React from 'react';
 import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Zanzibar History & Culture - A Journey Through Time",
+  description: "Dive into Zanzibar’s rich history and diverse culture. Explore its roots in trade, its vibrant architecture, and the stories that shape this island paradise",
+};
 
 const HistoryCulturePage = async () => {
   const timelineEvents = [

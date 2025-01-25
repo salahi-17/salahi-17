@@ -8,6 +8,12 @@ import { FaTiktok, FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa
 import Link from 'next/link';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Contact Zafiri - Start Your Zanzibar Adventure",
+  description: "Get in touch with Zafiri for personalized travel advice and inquiries. Let us help you plan the ultimate Zanzibar experience.",
+};
 
 const ContactPage = async () => {
   const galleryImages = [

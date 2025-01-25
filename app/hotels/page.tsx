@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import { getPlaceholderImage } from '@/utils/images';
 import HotelsPage from './HotelsPage';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Zanzibar Hotels - Luxury Stays with Zafiri",
+  description: "Find the best hotels in Zanzibar with Zafiri. From beachfront resorts to budget-friendly options, we’ve got your perfect stay covered",
+};
 
 const prisma = new PrismaClient();
 

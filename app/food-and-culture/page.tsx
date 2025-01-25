@@ -5,13 +5,19 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Zanzibar Cuisine & Culture - A Taste of Paradise",
+  description: "Savor the unique flavors of Zanzibar and immerse yourself in its rich cultural heritage. Zafiri guides you to the heart of local experiences.",
+};
 
 const ZanzibarCuisinePage = async () => {
   const foodCategories = [
     {
       title: "MAIN MEALS",
       items: [
-        { name: "Urojo soup (Zanzibar mix)", description: "A tangy, creamy and spicy soup also known as Zanzibar Mix, is a popular street food. This specialty combines potatoes in curry soup, crispy bhajias, boiled eggs, kachori (fried chickpea balls), and garnished with cassava flakes and chutney.", image: "/" },
+        { name: "Urojo soup (Zanzibar mix)", description: "A tangy, creamy and spicy soup also known as Zanzibar Mix, is a popular street food. This specialty combines potatoes in curry soup, crispy bhajias, boiled eggs, kachori (fried chickpea balls), and garnished with cassava flakes and chutney.", image: "/food-and-culture/urojo-soup.webp" },
         { name: "Ndizi ya nyama", description: "Do you have meat and bananas on hand? If so, you're all set to make ndizi na nyama - a flavorful stew combining both ingredients.  Using unripe plantains adds a tender and delicious element to this unique stew..", image: "/food-and-culture/Ndizi-ya-nyama.webp" },
         { name: "Pilau", description: "A traditional rice dish of Zanzibar, thanks to its Swahili and Arab history. Pilau is cooked with flavored spices, vegetables, and meat, giving it its characteristic brown color. The blend of flavors, including cardamom, cinnamon, and cloves, creates a unique aroma that perfectly complements the tender meat, presenting a delicate and fragrant experience.", image: "/food-and-culture/Pilau.webp" },
         { name: "Mishkaki", description: "Mishkaki stands out as a renowned BBQ meat delicacy in East Africa. This dish involves marinating small meat pieces, skewering them, and grilling until they reach a tender texture. Mishkaki comes in various forms, including Cow meat (Mishaki ya nyama), Chicken meat (Mishkaki ya Kuku), and Goat (Mishkaki ya mbuzi)", image: "/food-and-culture/Mishkaki.webp" },

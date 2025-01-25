@@ -4,6 +4,13 @@ import { getPlaceholderImage } from '@/utils/images';
 import SafariCard from './SafariCard';
 import ActivityCard from './ActivityCard';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Zanzibar Tours & Activities - Adventure Await",
+  description: "Experience the best tours and activities Zanzibar has to offer. From safaris to ocean adventures, Zafiri creates unforgettable memories",
+};
+
 async function ToursActivitiesPage() {
   const safaris = [
     {

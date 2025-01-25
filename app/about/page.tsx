@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "About Zafiri - Connecting You to Zanzibar's Wonders",
+  description: "Learn about Zafiri, your trusted travel guide to Zanzibar. Explore our mission to provide authentic experiences and connections to this magical destination.",
+};
+
 import {AboutHero} from "@/components/about/AboutHero"
 import {AboutStory} from "@/components/about/AboutStory"
 import {ExcellenceSection} from "@/components/about/ExcellenceSection"
