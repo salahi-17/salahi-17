@@ -22,6 +22,7 @@ interface Activity {
   rating: number | null;
   latitude: number | null;
   longitude: number | null;
+  totalRatings: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,9 +48,9 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
   const [category, setCategory] = useState(activity?.category || "");
   const [location, setLocation] = useState(activity?.location || "");
   const [description, setDescription] = useState(activity?.description || "");
-  const [price, setPrice] = useState(activity?.price?.toString() || "");
+  const [price, setPrice] = useState(activity?.price?.toString() || "0");
   const [amenities, setAmenities] = useState(activity?.amenities?.join(", ") || "");
-  const [rating, setRating] = useState(activity?.rating?.toString() || "");
+  const [rating, setRating] = useState(activity?.rating?.toString() || "0");
   const [latitude, setLatitude] = useState<number | null>(activity?.latitude || null);
   const [longitude, setLongitude] = useState<number | null>(activity?.longitude || null);
   const [existingMedia, setExistingMedia] = useState(activity?.images || []);
@@ -58,7 +59,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
       mediaUploads.forEach(upload => {
@@ -72,13 +72,12 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
     setCategory("");
     setLocation("");
     setDescription("");
-    setPrice("");
+    setPrice("0");
     setAmenities("");
-    setRating("");
+    setRating("0");
     setLatitude(null);
     setLongitude(null);
     setExistingMedia([]);
-    // Cleanup preview URLs
     mediaUploads.forEach(upload => {
       URL.revokeObjectURL(upload.previewUrl);
     });
@@ -87,34 +86,56 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
   };
 
   const validateForm = () => {
-    if (!name || !category || !location || !description || !amenities) {
+    if (!name.trim() || !category.trim() || !location.trim() || !description.trim()) {
       toast({
-        title: "Validation Error",
-        description: "All fields are required",
+        title: "Required Fields Missing",
+        description: "Please fill in all required fields: name, category, location, and description",
         variant: "destructive",
       });
       return false;
     }
 
-    if (isNaN(parseFloat(price))) {
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum < 0) {
       toast({
-        title: "Validation Error",
-        description: "Price must be a valid number",
+        title: "Invalid Price",
+        description: "Price must be a valid non-negative number",
         variant: "destructive",
       });
       return false;
     }
 
-    if (!activity && mediaUploads.length === 0 && existingMedia.length === 0) {
+    if (rating) {
+      const ratingNum = parseFloat(rating);
+      if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 5) {
+        toast({
+          title: "Invalid Rating",
+          description: "Rating must be between 0 and 5",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    if (!activity?.image && mediaUploads.length === 0 && existingMedia.length === 0) {
       toast({
-        title: "Validation Error",
+        title: "Media Required",
         description: "At least one image is required",
         variant: "destructive",
       });
       return false;
     }
 
-    // Check if any media is still loading or has errors
+    const amenitiesList = amenities.split(",").map(item => item.trim()).filter(Boolean);
+    if (amenitiesList.length === 0) {
+      toast({
+        title: "Invalid Amenities",
+        description: "Please add at least one amenity",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const hasUnloadedMedia = mediaUploads.some(
       upload => !upload.loaded || upload.error
     );
@@ -134,7 +155,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
     const files = Array.from(e.target.files || []);
     
     files.forEach(file => {
-      // Create initial upload status
       const upload: MediaUploadStatus = {
         id: Math.random().toString(36).substring(7),
         file,
@@ -148,7 +168,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       setMediaUploads(prev => [...prev, upload]);
 
       if (upload.type === 'image') {
-        // Handle image loading
         const img = new Image();
         img.onload = () => {
           setMediaUploads(prev => 
@@ -171,7 +190,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
         };
         img.src = upload.previewUrl;
       } else {
-        // Handle video loading
         const video = document.createElement('video');
         video.onloadeddata = () => {
           setMediaUploads(prev => 
@@ -193,7 +211,6 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
           URL.revokeObjectURL(upload.previewUrl);
         };
 
-        // Show loading progress for video
         video.addEventListener('progress', () => {
           if (video.buffered.length > 0) {
             const progress = (video.buffered.end(0) / video.duration) * 100;
@@ -235,22 +252,23 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
 
     try {
       const formData = new FormData();
-      formData.append("name", name);
-      formData.append("category", category);
-      formData.append("location", location);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("amenities", JSON.stringify(amenities.split(",").map(item => item.trim())));
+      formData.append("name", name.trim());
+      formData.append("category", category.trim());
+      formData.append("location", location.trim());
+      formData.append("description", description.trim());
+      formData.append("price", price || "0");
+      formData.append("amenities", JSON.stringify(amenities.split(",").map(item => item.trim()).filter(Boolean)));
       formData.append("rating", rating || "0");
-      formData.append("latitude", latitude?.toString() || "");
-      formData.append("longitude", longitude?.toString() || "");
+      
+      if (latitude && longitude) {
+        formData.append("latitude", latitude.toString());
+        formData.append("longitude", longitude.toString());
+      }
 
-      // Add all media files
       mediaUploads.forEach(upload => {
         formData.append("media", upload.file);
       });
 
-      // Add existing media information
       formData.append("existingMedia", JSON.stringify(existingMedia));
 
       const url = activity ? `/api/admin/activities/${activity.id}` : "/api/admin/activities";
@@ -260,7 +278,8 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Submission failed");
       }
 
       toast({
@@ -273,7 +292,7 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: `Failed to ${activity ? 'update' : 'create'} activity`,
+        description: error instanceof Error ? error.message : "Failed to submit activity",
         variant: "destructive",
       });
     } finally {
@@ -285,22 +304,40 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
     <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <Label htmlFor="name">Name *</Label>
+          <Input 
+            id="name" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+            maxLength={255}
+          />
         </div>
         <div>
-          <Label htmlFor="category">Category</Label>
-          <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} required />
+          <Label htmlFor="category">Category *</Label>
+          <Input 
+            id="category" 
+            value={category} 
+            onChange={(e) => setCategory(e.target.value)} 
+            required 
+            maxLength={255}
+          />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="location">Location</Label>
-        <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} required />
+        <Label htmlFor="location">Location *</Label>
+        <Input 
+          id="location" 
+          value={location} 
+          onChange={(e) => setLocation(e.target.value)} 
+          required 
+          maxLength={255}
+        />
       </div>
 
       <div>
-        <Label>Map Location</Label>
+        <Label>Map Location (Optional)</Label>
         <MapLocationPicker
           latitude={latitude}
           longitude={longitude}
@@ -312,17 +349,31 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+        <Label htmlFor="description">Description *</Label>
+        <Textarea 
+          id="description" 
+          value={description} 
+          onChange={(e) => setDescription(e.target.value)} 
+          required 
+          maxLength={1000}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="price">Price</Label>
-          <Input id="price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
+          <Label htmlFor="price">Price *</Label>
+          <Input 
+            id="price" 
+            type="number" 
+            step="0.01" 
+            min="0"
+            value={price} 
+            onChange={(e) => setPrice(e.target.value)} 
+            required 
+          />
         </div>
         <div>
-          <Label htmlFor="rating">Rating</Label>
+          <Label htmlFor="rating">Rating (0-5)</Label>
           <Input
             id="rating"
             type="number"
@@ -336,12 +387,19 @@ export default function ActivityUploadForm({ activity, onSubmitSuccess }: Activi
       </div>
 
       <div>
-        <Label htmlFor="amenities">Amenities (comma-separated)</Label>
-        <Input id="amenities" value={amenities} onChange={(e) => setAmenities(e.target.value)} required />
+        <Label htmlFor="amenities">Amenities * (comma-separated)</Label>
+        <Input 
+          id="amenities" 
+          value={amenities} 
+          onChange={(e) => setAmenities(e.target.value)} 
+          required 
+          placeholder="e.g., WiFi, Parking, Restaurant"
+        />
       </div>
 
       <div>
-        <Label>Media Files</Label>
+        <Label>Media Files *</Label>
+        <p className="text-sm text-gray-500 mb-2">At least one image is required</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
           {existingMedia.map((media) => (
             <Card key={media.id} className="relative">
