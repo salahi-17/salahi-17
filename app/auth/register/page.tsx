@@ -8,6 +8,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Register for Your Zanzibar Adventure | Zafiri",
   description: "Create an account to begin your unforgettable Zanzibar journey! Sign up now for exclusive deals, easy booking management, and tailored travel experiences with Zafiri.",
+  alternates: {
+    canonical: '/auth/regsiter',
+  }
 };
 
 export default function RegisterPage({

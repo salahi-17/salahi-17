@@ -8,6 +8,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Sign In to Your Zanzibar Travel Account | Zafiri",
   description: "Log in to access your personalized Zanzibar travel plans, bookings, and exclusive offers. Sign in now and start exploring the beauty of Zanzibar with Zafiri.",
+  alternates: {
+    canonical: '/auth/signin',
+  }
 };
 
 export default function SignInPage({
