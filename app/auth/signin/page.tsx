@@ -3,6 +3,12 @@ import SignInForm from './SignInForm'
 import Link from 'next/link'
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Sign In to Your Zanzibar Travel Account | Zafiri",
+  description: "Log in to access your personalized Zanzibar travel plans, bookings, and exclusive offers. Sign in now and start exploring the beauty of Zanzibar with Zafiri.",
+};
 
 export default function SignInPage({
   searchParams,

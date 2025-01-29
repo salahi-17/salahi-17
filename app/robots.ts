@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/_next/', '/payment-complete'],
+      disallow: ['/api/', '/admin/', '/payment-complete/', '/auth/signin?callbackUrl=*', '/auth/register?callbackUrl=*'],
     },
     sitemap: `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml`,
   }

@@ -3,6 +3,12 @@ import RegisterForm from './RegisterForm'
 import Link from 'next/link'
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Register for Your Zanzibar Adventure | Zafiri",
+  description: "Create an account to begin your unforgettable Zanzibar journey! Sign up now for exclusive deals, easy booking management, and tailored travel experiences with Zafiri.",
+};
 
 export default function RegisterPage({
   searchParams,
