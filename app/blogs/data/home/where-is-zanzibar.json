@@ -1,0 +1,66 @@
+{
+    "id": "where-is-zanzibar",
+    "title": "Where Is Zanzibar? Everything You Need to Know About This Island Paradise",
+    "excerpt": "Discover the location and allure of Zanzibar, a stunning Indian Ocean archipelago off Tanzania's coast, known for its pristine beaches, rich culture, and vibrant history.",
+    "image": "/blog/zanzibar-location.webp",
+    "date": "February 12, 2025",
+    "category": "home",
+    "content": [
+      {
+        "type": "introduction",
+        "title": "Introduction",
+        "content": "Wondering where is Zanzibar? This stunning Indian Ocean island off the coast of Tanzania is famous for its white-sand beaches, turquoise waters, and rich cultural history. Whether you're looking for a relaxing beach escape, a cultural adventure in Stone Town Zanzibar, or an eco-friendly getaway, Zanzibar Island offers it all."
+      },
+      {
+        "type": "section",
+        "title": "Where Is Zanzibar Located?",
+        "items": [
+          {
+            "title": "Geographic Location 🗺️",
+            "content": "Zanzibar is an archipelago in Tanzania, located just 25–50 km off the mainland's coast. The main island, Zanzibar Island (also called Unguja), is the most visited, while Pemba Island and Mnemba Island are also popular for diving and luxury stays."
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "title": "Why Visit Zanzibar?",
+        "items": [
+          {
+            "title": "Beautiful Beaches 🏖️",
+            "content": "Zanzibar beaches are some of the most beautiful in the world, offering pristine white sand and crystal-clear waters."
+          },
+          {
+            "title": "Rich Cultural Heritage 🏛️",
+            "content": "Experience the rich cultural history in Stone Town Zanzibar, a UNESCO World Heritage site."
+          },
+          {
+            "title": "Marine Life 🐠",
+            "content": "World-class diving & snorkeling with Zanzibar sea turtles and coral reefs."
+          },
+          {
+            "title": "Culinary Delights 🍽️",
+            "content": "Fresh, local cuisine influenced by African, Arab, and Indian flavors."
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "title": "How to Get to Zanzibar?",
+        "items": [
+          {
+            "title": "By Air ✈️",
+            "content": "Flights to Zanzibar arrive at Zanzibar International Airport (Abeid Amani Karume International Airport)"
+          },
+          {
+            "title": "By Sea ⛴️",
+            "content": "Ferry services run between Dar es Salaam and Zanzibar"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "title": "Final Thoughts",
+        "content": "Whether you're planning your first Zanzibar holiday or returning for another adventure, Zanzibar Island Tanzania is a must-visit destination that combines natural beauty, rich culture, and unforgettable experiences."
+      }
+    ]
+  }

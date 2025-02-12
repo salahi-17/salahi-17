@@ -3,13 +3,18 @@ import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
 import { Metadata } from 'next';
+import BlogSection from '@/components/BlogSection';
+import { getBlogsByCategory } from '@/lib/blogs';
 
 export const metadata: Metadata = {
   title: "Zanzibar History & Culture - A Journey Through Time",
   description: "Dive into Zanzibar’s rich history and diverse culture. Explore its roots in trade, its vibrant architecture, and the stories that shape this island paradise",
 };
 
+
 const HistoryCulturePage = async () => {
+  const blogs = await getBlogsByCategory('history');
+  
   const timelineEvents = [
     {
       period: "2000s",
@@ -170,7 +175,7 @@ const HistoryCulturePage = async () => {
         ))}
       </div>
 
-      {/* Image Gallery */}
+      {/* Image Gallery
       <div className="container mx-auto px-4 mb-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {galleryImagesWithPlaceholders.map((image, index) => (
@@ -187,7 +192,12 @@ const HistoryCulturePage = async () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
+      <BlogSection 
+        blogs={blogs}
+        title="Discover Zanzibar's History"
+        category="history"
+      />
 
       {/* Rising Promise Section */}
       <div className="bg-primary py-12">
