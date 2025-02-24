@@ -19,7 +19,7 @@ import BlogSection from '@/components/BlogSection';
 import { getBlogsByCategory } from '@/lib/blogs';
 
 const AboutPage = async () => {
-    const blogs = await getBlogsByCategory('about');
+  const blogs = await getBlogsByCategory('about');
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">

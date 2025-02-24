@@ -1,0 +1,158 @@
+{
+    "id": "what-to-do-in-zanzibar",
+    "title": "What to Do in Zanzibar: Top Activities & Attractions",
+    "excerpt": "Discover the best experiences Zanzibar has to offer beyond its famous beaches - from exploring historic Stone Town and pristine beaches to underwater adventures, spice tours, and unique dining experiences.",
+    "image": "/blog/zanzibar-activities-main.webp",
+    "date": "March 10, 2025",
+    "category": "activities",
+    "content": [
+      {
+        "type": "introduction",
+        "title": "Introduction: Why Zanzibar Is More Than Just Beaches",
+        "content": "Many travelers picture Zanzibar's white sandy beaches, but this island paradise has so much more to offer. From rich cultural experiences in Stone Town to thrilling water sports and wildlife encounters, Zanzibar is a destination that caters to all types of travelers. Whether you're an adventure-seeker, a history lover, or a beach enthusiast, here are the top activities you cannot miss in Zanzibar."
+      },
+      {
+        "type": "section",
+        "title": "1. Explore the UNESCO Heritage Site of Stone Town 🏛️",
+        "content": "Stone Town Zanzibar is the historic heart of the island, filled with winding alleys, ancient mosques, and vibrant markets.",
+        "items": [
+          {
+            "title": "Visit the House of Wonders",
+            "content": "The tallest building in Stone Town and a historic museum showcasing Zanzibar's rich cultural heritage and Swahili civilization."
+          },
+          {
+            "title": "Explore the Old Fort",
+            "content": "A 17th-century fortress with cultural performances and art shops. The fort was built by Omani Arabs after expelling the Portuguese and now hosts local craft markets."
+          },
+          {
+            "title": "Wander through Darajani Market",
+            "content": "Experience Zanzibar's local flavors, from spices to seafood. This bustling market is where locals shop for fresh produce, meat, and household items."
+          }
+        ]
+      },
+      {
+        "type": "tip",
+        "content": "Did you know? Stone Town is Freddie Mercury's birthplace – visit the Freddie Mercury Museum to learn about his roots!"
+      },
+      {
+        "type": "section",
+        "title": "2. Discover Zanzibar's Stunning Beaches 🏖️",
+        "content": "Zanzibar boasts some of the best beaches in the world. Whether you want relaxation or adventure, here's where to go:",
+        "items": [
+          {
+            "title": "Nungwi Beach",
+            "content": "Crystal-clear waters, beach bars, and incredible sunset views. Located on the northern tip of the island, Nungwi has minimal tide variation, allowing for swimming all day."
+          },
+          {
+            "title": "Paje Beach",
+            "content": "The best kitesurfing spot in Zanzibar, with consistent winds and a vibrant beach culture. This east coast beach is popular with water sports enthusiasts and has a laid-back atmosphere."
+          },
+          {
+            "title": "Kendwa Beach",
+            "content": "A lively nightlife scene with full-moon beach parties. Similar to Nungwi, Kendwa offers swimming regardless of the tide and is known for its social atmosphere."
+          }
+        ]
+      },
+      {
+        "type": "tip",
+        "content": "Pro Tip: Check Zafiri's itinerary planner for top-rated beachfront hotels with the best views and amenities."
+      },
+      {
+        "type": "section",
+        "title": "3. Go Snorkeling & Diving in Zanzibar 🌊",
+        "content": "Zanzibar is a diver's paradise, with vibrant coral reefs and marine life. Explore an underwater world of colorful corals, tropical fish, and majestic sea creatures.",
+        "items": [
+          {
+            "title": "Mnemba Atoll",
+            "content": "A protected reef known for dolphins, turtles, and tropical fish. This marine conservation area offers some of the best visibility in East Africa and is suitable for divers of all experience levels."
+          },
+          {
+            "title": "Chumbe Island",
+            "content": "Eco-friendly snorkeling in a marine protected area. This small coral island has a protected reef sanctuary with over 200 species of coral and 400 species of fish."
+          },
+          {
+            "title": "Kizimkazi",
+            "content": "A dolphin-watching hotspot in the southern part of the island. Here you can take boat trips to spot bottlenose and humpback dolphins in their natural habitat."
+          }
+        ]
+      },
+      {
+        "type": "image",
+        "src": "/blog/zanzibar-snorkeling-adventure.webp",
+        "alt": "Young snorkeler exploring vibrant coral reef with colorful starfish in Zanzibar's crystal-clear waters",
+        "caption": "The underwater world of Zanzibar offers unforgettable encounters with marine life, like this young explorer discovering a vibrant starfish among coral formations"
+      },
+      {
+        "type": "tip",
+        "content": "Did you know? Mnemba Atoll is Zanzibar's most famous dive site, offering some of the clearest waters in Tanzania with visibility often exceeding 30 meters!"
+      },
+      {
+        "type": "section",
+        "title": "4. Take a Zanzibar Spice Tour 🌿",
+        "content": "Zanzibar is called the \"Spice Island\" for a reason! A spice farm tour is one of the best cultural experiences you can have during your visit.",
+        "items": [
+          {
+            "title": "Taste fresh spices",
+            "content": "Sample cloves, nutmeg, cinnamon, and other spices directly from the source. You'll learn to identify different spices by their appearance, smell, and taste."
+          },
+          {
+            "title": "Learn about the spice trade",
+            "content": "Discover the history of Zanzibar's spice trade and how it shaped the island's culture and economy over centuries."
+          },
+          {
+            "title": "Traditional harvesting methods",
+            "content": "Watch local farmers demonstrate traditional harvesting methods that have been passed down through generations."
+          }
+        ]
+      },
+      {
+        "type": "tip",
+        "content": "Book your Zanzibar spice tour with Zafiri for an authentic experience with knowledgeable local guides who can share cultural insights!"
+      },
+      {
+        "type": "section",
+        "title": "5. Visit the Rock Restaurant Zanzibar 🍽️",
+        "content": "The Rock Restaurant Zanzibar is an iconic dining spot, set on a rock in the Indian Ocean. This unique culinary experience should be on every visitor's bucket list.",
+        "items": [
+          {
+            "title": "Authentic Cuisine",
+            "content": "Enjoy fresh seafood and local Swahili cuisine prepared with traditional spices and techniques."
+          },
+          {
+            "title": "Unique Access",
+            "content": "Access the restaurant by boat during high tide or walk across the sand during low tide, adding to the adventure of dining here."
+          },
+          {
+            "title": "Photography Paradise",
+            "content": "Insta-worthy views – a must-visit for photographers! The restaurant against the backdrop of turquoise waters creates stunning photo opportunities."
+          }
+        ]
+      },
+      {
+        "type": "tip",
+        "content": "Reserve your table in advance – this spot gets booked fast, especially during sunset hours!"
+      },
+      {
+        "type": "section",
+        "title": "Other Must-Do Activities in Zanzibar",
+        "items": [
+          {
+            "title": "Prison Island Tour",
+            "content": "Visit the home of Zanzibar's giant tortoises, some over 100 years old, and explore the historic former prison building."
+          },
+          {
+            "title": "Jozani Forest",
+            "content": "Spot the rare red colobus monkeys in their natural habitat and walk through the magical mangrove forest."
+          },
+          {
+            "title": "Sunset Dhow Cruise",
+            "content": "Sail on a traditional wooden dhow boat while watching the sun set over the Indian Ocean – a magical end to any day in Zanzibar."
+          }
+        ]
+      },
+      {
+        "type": "conclusion",
+        "content": "Zanzibar offers so many amazing experiences, from history and adventure to relaxation and luxury. Whether you're exploring Stone Town Zanzibar, snorkeling in Mnemba Atoll, or sipping cocktails on the beach, Zanzibar promises unforgettable moments. Make your Zanzibar holiday stress-free with Zafiri's itinerary planner – discover, book, and explore hassle-free!"
+      }
+    ]
+  }

@@ -5,6 +5,8 @@ import SafariCard from './SafariCard';
 import ActivityCard from './ActivityCard';
 
 import { Metadata } from 'next';
+import BlogSection from '@/components/BlogSection';
+import { getBlogsByCategory } from '@/lib/blogs';
 
 export const metadata: Metadata = {
   title: "Zanzibar Tours & Activities - Adventure Await",
@@ -12,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 async function ToursActivitiesPage() {
+  
+  const blogs = await getBlogsByCategory('activities');
   const safaris = [
     {
       title: "11 DAYS SAFARI TRIP TANZANIA AND ZANZIBAR",
@@ -91,6 +95,11 @@ async function ToursActivitiesPage() {
           ))}
         </div>
       </div>
+      <BlogSection 
+        blogs={blogs}
+        title="Acitivites in Zanzibar"
+        category="activities"
+      />
     </>
   );
 };
