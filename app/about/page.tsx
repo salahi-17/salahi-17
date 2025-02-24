@@ -15,8 +15,12 @@ import { TourismStats } from '@/components/about/TourismStats';
 import { ZafiriEmpire } from '@/components/about/ZafiriEmpire';
 import { MakeADifference } from '@/components/about/MakeDifference';
 import { AboutZanzibar } from '@/components/about/AboutZanzibar';
+import BlogSection from '@/components/BlogSection';
+import { getBlogsByCategory } from '@/lib/blogs';
 
-const AboutPage = () => {
+const AboutPage = async () => {
+    const blogs = await getBlogsByCategory('about');
+  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <AboutHero/>
@@ -28,6 +32,11 @@ const AboutPage = () => {
       <ZafiriEmpire />
       <MakeADifference/>
       <AboutZanzibar />
+      <BlogSection 
+        blogs={blogs}
+        title="Discover Zanzibar"
+        category="about"
+      />
     </main>
   );
 };

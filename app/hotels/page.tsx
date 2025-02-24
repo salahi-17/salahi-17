@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { getPlaceholderImage } from '@/utils/images';
 import HotelsPage from './HotelsPage';
 import { Metadata } from 'next';
+import { getBlogsByCategory } from '@/lib/blogs';
 
 export const metadata: Metadata = {
   title: "Zanzibar Hotels - Luxury Stays with Zafiri",
@@ -28,6 +29,7 @@ async function getHotels() {
 export default async function HotelsPageWrapper() {
   const initialHotels = await getHotels();
   const heroImageData = await getPlaceholderImage("/hotels/hotels-hero.png");
+  const blogs = await getBlogsByCategory('hotels');
 
-  return <HotelsPage initialHotels={initialHotels} heroImageData={heroImageData} />;
+  return <HotelsPage initialHotels={initialHotels} heroImageData={heroImageData} blogs={blogs} />;
 }

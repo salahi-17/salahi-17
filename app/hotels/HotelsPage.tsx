@@ -7,6 +7,8 @@ import { HotelsSection } from '@/components/HotelCard';
 import { AmenitiesCarousel } from '@/components/AmenitiesCarousel';
 import { aclonica } from '@/utils/aclonica';
 import TestimonialsSection from '@/components/HotelsTestimonials';
+import BlogSection from '@/components/BlogSection';
+import { BlogPost } from '@/lib/blogs';
 interface Hotel {
   id: string;
   name: string;
@@ -27,13 +29,14 @@ interface HotelsPageProps {
     src: string;
     placeholder: string;
   };
+  blogs: BlogPost[];
 }
 
-export default function HotelsPage({ initialHotels, heroImageData }: HotelsPageProps) {
+export default async function HotelsPage({ initialHotels, heroImageData, blogs }: HotelsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>(initialHotels);
-
+  
   const amenities = [
     { name: "Hot Tub", image: "/hotels/hot-tub.webp" },
     { name: "Apartments", image: "/hotels/apartments.webp" },
@@ -68,6 +71,7 @@ export default function HotelsPage({ initialHotels, heroImageData }: HotelsPageP
     }
   };
 
+
   return (
     <>
       {/* Hero Section */}
@@ -91,6 +95,11 @@ export default function HotelsPage({ initialHotels, heroImageData }: HotelsPageP
         <AmenitiesCarousel amenities={amenities} onAmenityClick={handleAmenityClick} />
         <HotelsSection hotels={filteredHotels} />
         <TestimonialsSection />
+        <BlogSection 
+        blogs={blogs}
+        title="Stay in Zanzibar"
+        category="hotels"
+      />
       </div>
     </>
   );
