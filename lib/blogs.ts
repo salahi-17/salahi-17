@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type CategoryType = 'history' | 'islands' | 'activities' | 'home' | 'about' | 'hotels';
+export type CategoryType = 'history' | 'islands' | 'activities' | 'home' | 'about' | 'hotels' | 'food';
 
 export interface BlogPost {
   id: string;
@@ -43,7 +43,7 @@ export const getBlogsByCategory = async (category: string): Promise<BlogPost[]> 
 
 export const getBlogBySlug = async (slug: string): Promise<BlogPost | null> => {
   // Search through all category directories to find the blog
-  const categories = ['history', 'islands', 'activities', 'home' , 'about', 'hotels'];
+  const categories = ['history', 'islands', 'activities', 'home' , 'about', 'hotels', 'food'];
   
   for (const category of categories) {
     const blogsDirectory = path.join(process.cwd(), 'app/blogs/data', category);

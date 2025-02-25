@@ -17,10 +17,13 @@ import { MakeADifference } from '@/components/about/MakeDifference';
 import { AboutZanzibar } from '@/components/about/AboutZanzibar';
 import BlogSection from '@/components/BlogSection';
 import { getBlogsByCategory } from '@/lib/blogs';
+import { getFaqsByCategory } from '@/lib/getFaqData';
+import FaqSection from '@/components/FaqSection';
 
 const AboutPage = async () => {
   const blogs = await getBlogsByCategory('about');
-  
+  const faqData = await getFaqsByCategory('about');
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <AboutHero/>
@@ -37,6 +40,12 @@ const AboutPage = async () => {
         title="Discover Zanzibar"
         category="about"
       />
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </main>
   );
 };

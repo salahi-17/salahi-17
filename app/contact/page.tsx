@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
 import { Metadata } from 'next';
+import FaqSection from '@/components/FaqSection';
+import { getFaqsByCategory } from '@/lib/getFaqData';
 
 export const metadata: Metadata = {
   title: "Contact Zafiri - Start Your Zanzibar Adventure",
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
 };
 
 const ContactPage = async () => {
+  const faqData = await getFaqsByCategory('contact');
+
   const galleryImages = [
     "/home/zanzibar-attractions.webp",
     "/islands/Prison-Island.webp",
@@ -136,6 +140,12 @@ const ContactPage = async () => {
           </div>
         </div>
       </div>
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </div>
   );
 };

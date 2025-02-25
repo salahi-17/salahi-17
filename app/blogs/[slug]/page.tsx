@@ -102,6 +102,7 @@ const BlogPost = async ({ params }: PageProps) => {
       islands: { path: '/islands', title: 'Islands' },
       about: { path: '/about', title: 'About' },
       hotels: { path: '/hotels', title: 'Hotels' },
+      food: { path: '/food-and-culture', title: 'Food and Culture' },
       activities: { path: '/activities', title: 'Activities' }
     };
     return details[category] || { path: '/', title: 'Home' };

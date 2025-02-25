@@ -1,0 +1,46 @@
+{
+    "pageTitle": "Zanzibar Food & Culture FAQ",
+    "pageDescription": "Discover the flavors and culinary experiences of Zanzibar - from local dishes and spice farms to the best restaurants and dining experiences",
+    "faqs": [
+      {
+        "id": "zanzibar-food-fame",
+        "question": "What is Zanzibar famous for?",
+        "answer": "Zanzibar is famous for its pristine beaches, rich history, and vibrant culture, but it is also renowned for its spice farms and Swahili cuisine. From the narrow alleys of Stone Town Zanzibar to the beachfront seafood grills, visitors can experience an incredible variety of flavors influenced by African, Arab, and Indian traditions."
+      },
+      {
+        "id": "where-to-eat",
+        "question": "Where to eat in Zanzibar?",
+        "answer": "Zanzibar offers a mix of beachfront restaurants, street food markets, and fine dining experiences. Some top places to eat include: The Rock Restaurant Zanzibar – A world-famous restaurant on a rock in the ocean; Lukmaan Restaurant – Best for authentic Swahili cuisine in Stone Town Zanzibar; Emerson Spice – Rooftop dining with amazing sunset views; Beach House Zanzibar – Seafood with a view of the Indian Ocean."
+      },
+      {
+        "id": "must-try-foods",
+        "question": "What are the must-try Zanzibar foods?",
+        "answer": "Visitors must try these iconic Zanzibar dishes: Zanzibar biryani – A flavorful spiced rice dish; Octopus curry – A signature seafood dish in Zanzibar; Urojo soup – A tangy Zanzibar street food specialty; Mishkaki – Swahili-style grilled meat skewers; Mandazi – Sweet, fluffy Swahili doughnuts."
+      },
+      {
+        "id": "seafood-restaurants",
+        "question": "Where are the best seafood restaurants in Zanzibar?",
+        "answer": "The best seafood restaurants include: The Rock Restaurant Zanzibar – A must-visit dining spot; Cape Town Fish Market – Fresh seafood with ocean views; Zanzibar Serena Inn – Fine dining with traditional Swahili flavors; Kendwa Rocks – Beachfront seafood grills and live music."
+      },
+      {
+        "id": "stone-town-dishes",
+        "question": "What are the top local dishes to try in Stone Town Zanzibar?",
+        "answer": "Stone Town Zanzibar is a food lover's paradise. Top dishes to try include: Zanzibar pilau – A fragrant rice dish spiced with cloves and cinnamon; Zanzibar pizza – A famous savory street food snack; Samaki wa kupaka – Fish in coconut curry sauce; Fresh tropical fruits – Mango, pineapple, jackfruit, and durian."
+      },
+      {
+        "id": "spice-farms",
+        "question": "Is Zanzibar known for its spice farms?",
+        "answer": "Yes! Zanzibar is often called \"Spice Island\" due to its centuries-old spice farms. Visitors can take spice tours to see and taste: Cloves, cinnamon, and nutmeg; Turmeric and black pepper; Exotic fruits like jackfruit and starfruit. Spice farm tours are a must for anyone who wants to learn about Zanzibar's spice trade history."
+      },
+      {
+        "id": "beachfront-restaurants",
+        "question": "Where to find the best beachfront restaurants in Zanzibar?",
+        "answer": "For the perfect oceanfront dining experience, visit: The Rock Restaurant Zanzibar – Iconic dining on a rock in the sea; Kendwa Rocks – Seafood BBQs right on the beach; Upendo Beach Club – Luxury dining with sunset views; The Beach House Zanzibar – Authentic Swahili flavors by the ocean."
+      },
+      {
+        "id": "the-rock-booking",
+        "question": "How do I book a dining experience at The Rock Restaurant Zanzibar?",
+        "answer": "The Rock Restaurant Zanzibar is one of the most popular dining spots on the island. To book: Reserve online in advance, especially during peak season; Plan a boat ride if visiting at high tide; Enjoy signature cocktails and fresh seafood with stunning ocean views."
+      }
+    ]
+  }

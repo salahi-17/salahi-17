@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
+import { getFaqsByCategory } from '@/lib/getFaqData';
+import FaqSection from '@/components/FaqSection';
 
 export const metadata = {
   title: "Explore Zanzibar's Islands - Unguja, Pemba, and More",
@@ -41,6 +43,7 @@ const islands = [
 
 const IslandsPage = async () => {
   const heroImageData = await getPlaceholderImage("/islands/islands-hero.jpg");
+  const faqData = await getFaqsByCategory('islands');
 
   const islandsWithPlaceholders = await Promise.all(
     islands.map(async (island) => {
@@ -121,6 +124,12 @@ const IslandsPage = async () => {
           </Card>
         ))}
       </div>
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </div>
   );
 };

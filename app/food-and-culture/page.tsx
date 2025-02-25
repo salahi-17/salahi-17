@@ -6,6 +6,10 @@ import Image from 'next/image';
 import { getPlaceholderImage } from '@/utils/images';
 import { aclonica } from '@/utils/aclonica';
 import { Metadata } from 'next';
+import BlogSection from '@/components/BlogSection';
+import { getBlogsByCategory } from '@/lib/blogs';
+import FaqSection from '@/components/FaqSection';
+import { getFaqsByCategory } from '@/lib/getFaqData';
 
 export const metadata: Metadata = {
   title: "Zanzibar Cuisine & Culture - A Taste of Paradise",
@@ -13,6 +17,9 @@ export const metadata: Metadata = {
 };
 
 const ZanzibarCuisinePage = async () => {
+  const blogs = await getBlogsByCategory('food');
+  const faqData = await getFaqsByCategory('food-and-culture');
+
   const foodCategories = [
     {
       title: "MAIN MEALS",
@@ -112,6 +119,17 @@ const heroImageData = await getPlaceholderImage("/food-and-culture/food-and-cult
           </div>
         ))}
       </div>
+      <BlogSection 
+        blogs={blogs}
+        title="Food in Zanzibar"
+        category="food"
+      />
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </>
   );
 };

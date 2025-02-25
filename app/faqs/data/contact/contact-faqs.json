@@ -1,0 +1,31 @@
+{
+    "pageTitle": "Contact & Support FAQ",
+    "pageDescription": "Find answers to common questions about getting in touch with Zafiri and accessing customer support for your Zanzibar trip planning",
+    "faqs": [
+      {
+        "id": "contact-methods",
+        "question": "How do I contact Zafiri for Zanzibar holiday inquiries?",
+        "answer": "You can contact Zafiri for Zanzibar holiday inquiries through multiple channels: Email us via contact@zafiri.uk or Call us at +44 7436 790393 Submit your trip through the Zafiri itinerary creator and we'll back to you to confirm; Follow us on social media for real-time updates and travel inspiration."
+      },
+      {
+        "id": "customer-support",
+        "question": "Does Zafiri offer customer support for Zanzibar travel?",
+        "answer": "Yes, Zafiri offers reliable customer support to help you plan, book, and enjoy your Zanzibar holiday hassle-free. Live chat support on our website; Phone & WhatsApp support for quick assistance; Email inquiries answered within 24 hours. Whether you need help with Zanzibar hotels or excursions, we're here to assist you."
+      },
+      {
+        "id": "travel-deals",
+        "question": "How can I stay updated on Zafiri's latest travel deals?",
+        "answer": "Stay informed about exclusive Zanzibar travel deals by: Signing up for our newsletter to receive the latest offers; Following us on Instagram, Facebook, and TikTok; Checking our website's promotions page for updated Zanzibar holiday discounts. Be the first to know about discounted flights to Zanzibar, special hotel rates, and activity deals!"
+      },
+      {
+        "id": "custom-itinerary",
+        "question": "Can I request a custom itinerary through Zafiri?",
+        "answer": "Absolutely! Zafiri's itinerary planner allows you to create a fully customized Zanzibar holiday. We'll cater the hotel choice to match your budget and style and recommend the best Activities, tours and dining experience to suit your desired experience."
+      },
+      {
+        "id": "where-to-stay",
+        "question": "Where to stay in Zanzibar?",
+        "answer": "The best places to stay in Zanzibar depend on your travel style: Luxury: The Residence Zanzibar, Melia Zanzibar, Zuri Zanzibar; Beachfront resorts: Royal Zanzibar Beach Resort, Riu Palace Zanzibar; Eco-friendly stays: Chumbe Island Zanzibar, Fundu Lagoon Pemba; Historic charm: Park Hyatt Zanzibar, Stone Town Boutique Hotels."
+      }
+    ]
+  }

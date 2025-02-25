@@ -9,6 +9,8 @@ import { aclonica } from '@/utils/aclonica';
 import TestimonialsSection from '@/components/HotelsTestimonials';
 import BlogSection from '@/components/BlogSection';
 import { BlogPost } from '@/lib/blogs';
+import FaqSection from '@/components/FaqSection';
+
 interface Hotel {
   id: string;
   name: string;
@@ -30,9 +32,10 @@ interface HotelsPageProps {
     placeholder: string;
   };
   blogs: BlogPost[];
+  faqData: any;
 }
 
-export default async function HotelsPage({ initialHotels, heroImageData, blogs }: HotelsPageProps) {
+export default async function HotelsPage({ initialHotels, heroImageData, blogs, faqData }: HotelsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>(initialHotels);
@@ -100,6 +103,12 @@ export default async function HotelsPage({ initialHotels, heroImageData, blogs }
         title="Stay in Zanzibar"
         category="hotels"
       />
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
       </div>
     </>
   );

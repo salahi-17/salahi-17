@@ -7,6 +7,8 @@ import ActivityCard from './ActivityCard';
 import { Metadata } from 'next';
 import BlogSection from '@/components/BlogSection';
 import { getBlogsByCategory } from '@/lib/blogs';
+import FaqSection from '@/components/FaqSection';
+import { getFaqsByCategory } from '@/lib/getFaqData';
 
 export const metadata: Metadata = {
   title: "Zanzibar Tours & Activities - Adventure Await",
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
 async function ToursActivitiesPage() {
   
   const blogs = await getBlogsByCategory('activities');
+  const faqData = await getFaqsByCategory('activities');
+
   const safaris = [
     {
       title: "11 DAYS SAFARI TRIP TANZANIA AND ZANZIBAR",
@@ -100,6 +104,12 @@ async function ToursActivitiesPage() {
         title="Acitivites in Zanzibar"
         category="activities"
       />
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </>
   );
 };

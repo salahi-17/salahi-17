@@ -5,6 +5,8 @@ import { aclonica } from '@/utils/aclonica';
 import { Metadata } from 'next';
 import BlogSection from '@/components/BlogSection';
 import { getBlogsByCategory } from '@/lib/blogs';
+import FaqSection from '@/components/FaqSection';
+import { getFaqsByCategory } from '@/lib/getFaqData';
 
 export const metadata: Metadata = {
   title: "Zanzibar History & Culture - A Journey Through Time",
@@ -14,7 +16,8 @@ export const metadata: Metadata = {
 
 const HistoryCulturePage = async () => {
   const blogs = await getBlogsByCategory('history');
-  
+  const faqData = await getFaqsByCategory('history');
+
   const timelineEvents = [
     {
       period: "2000s",
@@ -208,6 +211,13 @@ const HistoryCulturePage = async () => {
           </p>
         </div>
       </div>
+
+      {faqData && faqData.faqs.length > 0 && (
+        <FaqSection 
+          faqs={faqData.faqs} 
+          title={faqData.pageTitle}
+        />
+      )}
     </div>
   );
 };

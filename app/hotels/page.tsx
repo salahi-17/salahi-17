@@ -3,6 +3,7 @@ import { getPlaceholderImage } from '@/utils/images';
 import HotelsPage from './HotelsPage';
 import { Metadata } from 'next';
 import { getBlogsByCategory } from '@/lib/blogs';
+import { getFaqsByCategory } from '@/lib/getFaqData';
 
 export const metadata: Metadata = {
   title: "Zanzibar Hotels - Luxury Stays with Zafiri",
@@ -30,6 +31,7 @@ export default async function HotelsPageWrapper() {
   const initialHotels = await getHotels();
   const heroImageData = await getPlaceholderImage("/hotels/hotels-hero.png");
   const blogs = await getBlogsByCategory('hotels');
+  const faqData = await getFaqsByCategory('hotels');
 
-  return <HotelsPage initialHotels={initialHotels} heroImageData={heroImageData} blogs={blogs} />;
+  return <HotelsPage initialHotels={initialHotels} heroImageData={heroImageData} blogs={blogs} faqData={faqData} />;
 }

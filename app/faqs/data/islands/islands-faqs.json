@@ -1,0 +1,41 @@
+{
+    "pageTitle": "Zanzibar Islands FAQ",
+    "pageDescription": "Learn about Zanzibar's main islands, their history, and how to explore these fascinating destinations",
+    "faqs": [
+      {
+        "id": "main-islands",
+        "question": "What are the main Zanzibar islands?",
+        "answer": "Zanzibar is an archipelago off the coast of Tanzania, consisting of several islands. The main Zanzibar islands include: Unguja (Zanzibar Island) – The largest island, home to Stone Town Zanzibar, white-sand beaches, and luxury resorts; Pemba Island – Known for its lush forests, diving spots, and spice farms; Prison Island (Changuu Island) – Famous for giant Aldabra tortoises and historical ruins; Mnemba Island – A private island retreat with world-class diving and snorkeling; Chumbe Island Zanzibar – A protected marine reserve and eco-friendly getaway."
+      },
+      {
+        "id": "zanzibar-tanzania",
+        "question": "Is Zanzibar in Tanzania?",
+        "answer": "Yes, Zanzibar is part of Tanzania, but it operates as a semi-autonomous region with its own government. Zanzibar consists of multiple islands off the east coast of Tanzania, with Zanzibar City on Unguja Island serving as its capital."
+      },
+      {
+        "id": "prison-island",
+        "question": "How do I get to Prison Island Zanzibar?",
+        "answer": "Prison Island Zanzibar, also known as Changuu Island, is just a short boat ride from Stone Town Zanzibar. To get there, you'll take a 15-20 minute boat ride from Forodhani Gardens in Stone Town. Use the itinerary creator to book a tour that includes entry to the giant tortoise sanctuary and snorkeling. This costs $20-$40 per person for a boat ride + entry fee."
+      },
+      {
+        "id": "mnemba-timing",
+        "question": "What is the best time to visit Mnemba Island?",
+        "answer": "Mnemba Island is a year-round tropical paradise, but the best time to visit Mnemba Island is: June to October – Dry season with clear skies and excellent diving conditions; January to March – Great for snorkeling and spotting dolphins; April and May – Rainy season, but still possible to visit for a quieter experience. Tip: Mnemba is a private island, but visitors can book snorkeling and diving trips around its reef."
+      },
+      {
+        "id": "private-islands",
+        "question": "Are there private island resorts in Zanzibar?",
+        "answer": "Yes! Zanzibar has several exclusive private island resorts for luxury travelers: Mnemba Island Lodge – The most luxurious private island resort in Zanzibar; Fundu Lagoon (Pemba Island) – A secluded eco-lodge for diving and relaxation; Chumbe Island Coral Park – A sustainable eco-resort with conservation-focused stays."
+      },
+      {
+        "id": "chumbe-day-trip",
+        "question": "How do I book a day trip to Chumbe Island Zanzibar?",
+        "answer": "Chumbe Island is a protected marine park, offering limited day trips for eco-tourism. You can pre-book via the itinerary creator and we'll get you a place for one of the few daily guest allocations. This will include boat transfers departing from Stone Town Zanzibar and optional guided snorkeling, nature walks, and a visit to the eco-lodge."
+      },
+      {
+        "id": "best-beaches",
+        "question": "What are the best beach destinations in Zanzibar island Tanzania?",
+        "answer": "Zanzibar has some of the best beaches in the world, including: Nungwi Beach – Best for luxury resorts and nightlife; Kendwa Beach – Ideal for sunsets, white sands, and beach bars; Paje Beach – Famous for kitesurfing and relaxed vibes; Matemwe Beach – Secluded beach near Mnemba Island for snorkeling; Jambiani Beach – A laid-back village with cultural charm."
+      }
+    ]
+  }
